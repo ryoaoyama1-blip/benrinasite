@@ -1,0 +1,434 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>My Portal</title>
+  
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script src="https://unpkg.com/react@18/umd/react.production.min.js" crossorigin></script>
+  <script src="https://unpkg.com/react-dom@18/umd/react-dom.production.min.js" crossorigin></script>
+  <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
+  <!-- Supabase ライブラリ -->
+  <script src="https://unpkg.com/@supabase/supabase-js@2"></script>
+</head>
+<body class="bg-white text-black font-sans">
+  
+  <div id="root"></div>
+
+  <script type="text/babel">
+    const { useState, useEffect } = React;
+
+    // 🔑 提供いただいたSupabase設定
+    const SUPABASE_URL = 'https://gvreyczwyzyrvnoskpkb.supabase.co';
+    const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Imd2cmV5Y3p3eXp5cnZub3NrcGtiIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODQ4MjMzODQsImV4cCI6MjEwMDM5OTM4NH0.DbG_309jHLfF03VNCyKDsxw3aP9omBB8y4-udlk-GF0';
+    
+    const supabaseClient = supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+
+    function App() {
+      const [session, setSession] = useState(null);
+      const [activeTab, setActiveTab] = useState('todo');
+
+      useEffect(() => {
+        supabaseClient.auth.getSession().then(({ data: { session } }) => {
+          setSession(session);
+        });
+
+        const { data: { subscription } } = supabaseClient.auth.onAuthStateChange((_event, session) => {
+          setSession(session);
+        });
+
+        return () => subscription.unsubscribe();
+      }, []);
+
+      if (!session) {
+        return <AuthScreen />;
+      }
+
+      return (
+        <div className="min-h-screen">
+          <header className="border-b-2 border-black p-4 flex justify-between items-center flex-wrap gap-2">
+            <div>
+              <h1 className="text-2xl font-bold tracking-wider">MY PORTAL</h1>
+              <p className="text-xs text-gray-500">{session.user.email} でログイン中</p>
+            </div>
+            <button 
+              onClick={() => supabaseClient.auth.signOut()} 
+              className="border-2 border-black px-3 py-1 text-sm font-bold hover:bg-black hover:text-white transition-colors"
+            >
+              ログアウト
+            </button>
+          </header>
+
+          <nav className="border-b-2 border-black p-4 flex space-x-4 overflow-x-auto">
+            {[
+              { id: 'todo', label: '📝 ToDo' },
+              { id: 'inventory', label: '🛒 備品リスト' },
+              { id: 'report', label: '📑 レポート支援' },
+              { id: 'portal', label: '🎓 リンク集' },
+            ].map((tab) => (
+              <button
+                key={tab.id}
+                onClick={() => setActiveTab(tab.id)}
+                className={`px-4 py-2 border-2 border-black whitespace-nowrap transition-colors ${
+                  activeTab === tab.id ? 'bg-black text-white' : 'bg-white text-black hover:bg-gray-200'
+                }`}
+              >
+                {tab.label}
+              </button>
+            ))}
+          </nav>
+
+          <main className="p-4 max-w-4xl mx-auto mt-4">
+            {activeTab === 'todo' && <TodoApp user={session.user} />}
+            {activeTab === 'inventory' && <InventoryApp user={session.user} />}
+            {activeTab === 'report' && <ReportApp />}
+            {activeTab === 'portal' && <PortalApp user={session.user} />}
+          </main>
+        </div>
+      );
+    }
+
+    // --- 🔐 ログイン / アカウント作成画面 ---
+    function AuthScreen() {
+      const [email, setEmail] = useState('');
+      const [password, setPassword] = useState('');
+      const [isSignUp, setIsSignUp] = useState(false);
+      const [message, setMessage] = useState('');
+
+      const handleAuth = async (e) => {
+        e.preventDefault();
+        setMessage('');
+        if (isSignUp) {
+          const { error } = await supabaseClient.auth.signUp({ email, password });
+          if (error) setMessage(error.message);
+          else setMessage('登録が完了しました！ログインしてください。');
+        } else {
+          const { error } = await supabaseClient.auth.signInWithPassword({ email, password });
+          if (error) setMessage('ログインエラー: メールアドレスまたはパスワードが違います');
+        }
+      };
+
+      return (
+        <div className="min-h-screen flex items-center justify-center p-4">
+          <div className="border-4 border-black p-8 w-full max-w-md space-y-6 bg-white">
+            <h2 className="text-2xl font-bold text-center border-b-2 border-black pb-2">
+              {isSignUp ? '新規アカウント登録' : 'MY PORTAL ログイン'}
+            </h2>
+            {message && <p className="text-sm font-bold text-center bg-gray-100 p-2 border border-black">{message}</p>}
+            <form onSubmit={handleAuth} className="space-y-4">
+              <div>
+                <label className="block text-sm font-bold mb-1">メールアドレス</label>
+                <input type="email" required value={email} onChange={(e) => setEmail(e.target.value)} className="w-full border-2 border-black p-2 focus:outline-none" />
+              </div>
+              <div>
+                <label className="block text-sm font-bold mb-1">パスワード</label>
+                <input type="password" required value={password} onChange={(e) => setPassword(e.target.value)} className="w-full border-2 border-black p-2 focus:outline-none" />
+              </div>
+              <button type="submit" className="w-full bg-black text-white font-bold py-3 hover:bg-gray-800 transition-colors">
+                {isSignUp ? '登録する' : 'ログインする'}
+              </button>
+            </form>
+            <div className="text-center pt-2">
+              <button onClick={() => setIsSignUp(!isSignUp)} className="text-sm font-bold underline">
+                {isSignUp ? '既にアカウントをお持ちの方はこちら' : '新しいアカウントを作る'}
+              </button>
+            </div>
+          </div>
+        </div>
+      );
+    }
+
+    // --- 1. ToDoアプリ ---
+    function TodoApp({ user }) {
+      const [todos, setTodos] = useState([]);
+      const [title, setTitle] = useState('');
+      const [deadline, setDeadline] = useState('');
+      const [memo, setMemo] = useState('');
+      const [selectedTodo, setSelectedTodo] = useState(null);
+
+      useEffect(() => {
+        fetchTodos();
+      }, []);
+
+      const fetchTodos = async () => {
+        const { data } = await supabaseClient.from('todos').select('*').order('id', { ascending: false });
+        if (data) setTodos(data);
+      };
+
+      const addTodo = async () => {
+        if (!title) return;
+        const newTodo = { id: Date.now(), user_id: user.id, title, deadline, memo, completed: false };
+        setTodos([newTodo, ...todos]);
+        setTitle(''); setDeadline(''); setMemo('');
+        await supabaseClient.from('todos').insert([newTodo]);
+      };
+
+      const toggleComplete = async (todo) => {
+        const updated = todos.map(t => t.id === todo.id ? { ...t, completed: !t.completed } : t);
+        setTodos(updated);
+        await supabaseClient.from('todos').update({ completed: !todo.completed }).eq('id', todo.id);
+      };
+
+      const deleteTodo = async (id) => {
+        setTodos(todos.filter(t => t.id !== id));
+        await supabaseClient.from('todos').delete().eq('id', id);
+      };
+
+      const getPriority = (dateString) => {
+        if (!dateString) return '';
+        const hours = (new Date(dateString) - new Date()) / (1000 * 60 * 60);
+        if (hours < 0) return '⚠️ 期限切れ';
+        if (hours <= 24) return '🚨 優先度:最高 (24時間以内)';
+        if (hours <= 72) return '❗️ 優先度:高 (3日以内)';
+        if (hours <= 168) return '優先度:中 (1週間以内)';
+        return '優先度:低';
+      };
+
+      return (
+        <div className="space-y-6">
+          <h2 className="text-xl font-bold border-b-2 border-black pb-2">Smart ToDo</h2>
+          
+          <div className="border-2 border-black p-4 space-y-2">
+            <input type="text" placeholder="タスク名" value={title} onChange={(e) => setTitle(e.target.value)} className="w-full border border-gray-400 p-2 focus:outline-none focus:border-black" />
+            <textarea placeholder="詳細メモ（任意）" value={memo} onChange={(e) => setMemo(e.target.value)} className="w-full border border-gray-400 p-2 h-20 focus:outline-none focus:border-black"></textarea>
+            <div className="flex gap-2 flex-wrap sm:flex-nowrap">
+              <input type="datetime-local" value={deadline} onChange={(e) => setDeadline(e.target.value)} className="border border-gray-400 p-2 flex-1 focus:outline-none focus:border-black" />
+              <button onClick={addTodo} className="bg-black text-white px-6 py-2 font-bold w-full sm:w-auto hover:bg-gray-800">追加</button>
+            </div>
+          </div>
+
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+            <div>
+              <h3 className="font-bold mb-2">未完了</h3>
+              {todos.filter(t => !t.completed).map(todo => (
+                <div key={todo.id} className="border-2 border-black p-3 mb-2 flex flex-col sm:flex-row justify-between items-start sm:items-center cursor-pointer hover:bg-gray-100 transition-colors" onClick={() => setSelectedTodo(todo)}>
+                  <div className="mb-2 sm:mb-0">
+                    <span className="font-bold block">{todo.title}</span>
+                    <span className="text-sm font-bold text-gray-600">{todo.deadline && getPriority(todo.deadline)}</span>
+                  </div>
+                  <button onClick={(e) => { e.stopPropagation(); toggleComplete(todo); }} className="border-2 border-black px-3 py-1 text-sm whitespace-nowrap bg-white hover:bg-black hover:text-white transition-colors">完了にする</button>
+                </div>
+              ))}
+            </div>
+            <div>
+              <h3 className="font-bold mb-2">完了済み</h3>
+              {todos.filter(t => t.completed).map(todo => (
+                <div key={todo.id} className="border-2 border-gray-300 p-3 mb-2 flex justify-between items-center bg-gray-50">
+                  <span className="text-gray-500 line-through">{todo.title}</span>
+                  <button onClick={() => deleteTodo(todo.id)} className="text-gray-400 hover:text-black font-bold px-2 py-1 transition-colors">✕</button>
+                </div>
+              ))}
+            </div>
+          </div>
+
+          {selectedTodo && (
+            <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center p-4 z-50" onClick={() => setSelectedTodo(null)}>
+              <div className="bg-white border-4 border-black p-6 w-full max-w-md" onClick={(e) => e.stopPropagation()}>
+                <h3 className="text-xl font-bold mb-2">{selectedTodo.title}</h3>
+                <p className="mb-4 text-sm font-bold border-b border-gray-300 pb-2">期限: {selectedTodo.deadline ? selectedTodo.deadline.replace('T', ' ') : '設定なし'}</p>
+                <p className="text-sm text-gray-500 mb-1">詳細メモ</p>
+                <div className="w-full border border-gray-400 p-3 h-32 mb-4 overflow-y-auto bg-gray-50 whitespace-pre-wrap">
+                  {selectedTodo.memo || 'メモはありません'}
+                </div>
+                <button onClick={() => setSelectedTodo(null)} className="w-full bg-black text-white py-2 font-bold hover:bg-gray-800">閉じる</button>
+              </div>
+            </div>
+          )}
+        </div>
+      );
+    }
+
+    // --- 2. 備品アプリ ---
+    function InventoryApp({ user }) {
+      const categories = ['リビング', 'トイレ', '洗面所', 'キッチン', '風呂'];
+      const [activeCat, setActiveCat] = useState(categories[0]);
+      const [items, setItems] = useState([]);
+      const [newItemName, setNewItemName] = useState('');
+      const [newItemCycle, setNewItemCycle] = useState(30);
+
+      useEffect(() => {
+        fetchItems();
+      }, []);
+
+      const fetchItems = async () => {
+        const { data } = await supabaseClient.from('inventory').select('*');
+        if (data) setItems(data);
+      };
+
+      const addItem = async () => {
+        if (!newItemName) return;
+        const today = new Date().toISOString().split('T')[0];
+        const newItem = { id: Date.now(), user_id: user.id, name: newItemName, category: activeCat, stock: 1, replace_cycle: newItemCycle, last_date: today };
+        setItems([...items, newItem]);
+        setNewItemName('');
+        await supabaseClient.from('inventory').insert([newItem]);
+      };
+
+      const updateStock = async (item, delta) => {
+        const newStock = Math.max(0, item.stock + delta);
+        const today = new Date().toISOString().split('T')[0];
+        const updated = items.map(i => i.id === item.id ? { ...i, stock: newStock, last_date: delta > 0 ? today : i.last_date } : i);
+        setItems(updated);
+        await supabaseClient.from('inventory').update({ stock: newStock, last_date: delta > 0 ? today : item.last_date }).eq('id', item.id);
+      };
+
+      const deleteItem = async (id) => {
+        setItems(items.filter(i => i.id !== id));
+        await supabaseClient.from('inventory').delete().eq('id', id);
+      };
+
+      return (
+        <div className="space-y-6">
+          <h2 className="text-xl font-bold border-b-2 border-black pb-2">備品管理・買い物リスト</h2>
+          
+          <div className="border-2 border-black p-4 bg-gray-100">
+            <h3 className="font-bold flex items-center mb-2">⚠️ 今買うものリスト（ストック不足）</h3>
+            <ul className="list-disc list-inside">
+              {items.filter(item => item.stock === 0).length > 0 
+                ? items.filter(item => item.stock === 0).map(item => <li key={item.id} className="font-bold text-black">{item.name} ({item.category})</li>)
+                : <li className="text-sm text-gray-500">現在不足している備品はありません。</li>}
+            </ul>
+          </div>
+
+          <div className="flex space-x-2 border-b border-black overflow-x-auto pb-2">
+            {categories.map(cat => (
+              <button key={cat} onClick={() => setActiveCat(cat)} className={`px-3 py-1 border-2 border-black whitespace-nowrap transition-colors ${activeCat === cat ? 'bg-black text-white' : 'bg-white text-black'}`}>
+                {cat}
+              </button>
+            ))}
+          </div>
+
+          <div className="flex flex-col sm:flex-row gap-2 bg-gray-50 p-4 border-2 border-black">
+            <input type="text" placeholder={`${activeCat}の新しい備品名`} value={newItemName} onChange={(e) => setNewItemName(e.target.value)} className="border border-black p-2 flex-1 focus:outline-none" />
+            <div className="flex items-center gap-2">
+              <span className="text-sm">目安:</span>
+              <input type="number" value={newItemCycle} onChange={(e) => setNewItemCycle(Number(e.target.value))} className="border border-black p-2 w-16 focus:outline-none" />
+              <span className="text-sm">日</span>
+              <button onClick={addItem} className="bg-black text-white px-4 py-2 font-bold hover:bg-gray-800 ml-2">追加</button>
+            </div>
+          </div>
+
+          <div className="space-y-3">
+            {items.filter(i => i.category === activeCat).map(item => (
+              <div key={item.id} className="border-2 border-black p-4 flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
+                <div>
+                  <p className="font-bold text-lg">{item.name}</p>
+                  <p className="text-sm text-gray-600">最終交換: {item.last_date} (目安: {item.replace_cycle}日)</p>
+                </div>
+                <div className="flex items-center gap-4 w-full sm:w-auto justify-between sm:justify-end">
+                  <div className="text-center">
+                    <span className="block text-xs">ストック</span>
+                    <span className="font-bold text-xl">{item.stock}</span>
+                  </div>
+                  <div className="flex gap-2 items-center">
+                    <button onClick={() => updateStock(item, -1)} className="border-2 border-black px-3 py-1 text-sm font-bold bg-white hover:bg-gray-200">- 使う</button>
+                    <button onClick={() => updateStock(item, 1)} className="bg-black text-white px-3 py-1 text-sm font-bold border-2 border-black hover:bg-gray-800">+ 補充</button>
+                    <button onClick={() => deleteItem(item.id)} className="text-gray-400 hover:text-black font-bold px-2 py-1 ml-2 transition-colors">✕</button>
+                  </div>
+                </div>
+              </div>
+            ))}
+          </div>
+        </div>
+      );
+    }
+
+    // --- 3. レポートアプリ ---
+    function ReportApp() {
+      const [text, setText] = useState('');
+      const [urls, setUrls] = useState('');
+      const [citations, setCitations] = useState([]);
+
+      const generateCitations = () => {
+        const urlList = urls.split('\n').filter(u => u.trim() !== '');
+        const today = new Date().toISOString().split('T')[0];
+        const generated = urlList.map(url => `Webサイト名未取得, ${url}, (参照 ${today})`);
+        setCitations(generated);
+      };
+
+      return (
+        <div className="space-y-6">
+          <h2 className="text-xl font-bold border-b-2 border-black pb-2">レポート作成アシスタント</h2>
+          <div>
+            <a href="https://notebooklm.google.com/" target="_blank" rel="noopener noreferrer" className="inline-block bg-black text-white font-bold py-3 px-6 border-2 border-black hover:bg-gray-800 transition-colors">
+              NotebookLM を開く ↗
+            </a>
+          </div>
+          <div className="border-2 border-black p-4">
+            <div className="flex justify-between items-end mb-2">
+              <h3 className="font-bold">下書き・構成メモ</h3>
+              <span className="text-xl font-bold">{text.length} <span className="text-sm font-normal">文字</span></span>
+            </div>
+            <textarea value={text} onChange={(e) => setText(e.target.value)} className="w-full h-32 border border-gray-400 p-2 focus:outline-none focus:border-black" placeholder="ここにレポートの構成や文章を入力..."></textarea>
+          </div>
+          <div className="border-2 border-black p-4">
+            <h3 className="font-bold mb-2">参考文献 自動フォーマット</h3>
+            <textarea value={urls} onChange={(e) => setUrls(e.target.value)} className="w-full h-24 border border-gray-400 p-2 mb-2 focus:outline-none focus:border-black" placeholder="URLを改行で複数貼り付け"></textarea>
+            <button onClick={generateCitations} className="bg-black text-white px-4 py-2 mb-4 font-bold hover:bg-gray-800">参考文献を出力</button>
+            {citations.length > 0 && (
+              <div className="bg-gray-100 p-4 border border-black">
+                {citations.map((cite, i) => <p key={i} className="text-sm font-mono mb-2 break-all">{cite}</p>)}
+              </div>
+            )}
+          </div>
+        </div>
+      );
+    }
+
+    // --- 4. ポータルアプリ ---
+    function PortalApp({ user }) {
+      const [links, setLinks] = useState([]);
+      const [name, setName] = useState('');
+      const [url, setUrl] = useState('');
+
+      useEffect(() => {
+        fetchLinks();
+      }, []);
+
+      const fetchLinks = async () => {
+        const { data } = await supabaseClient.from('portal_links').select('*');
+        if (data) setLinks(data);
+      };
+
+      const addLink = async () => {
+        if (name && url) {
+          const newLink = { id: Date.now(), user_id: user.id, name, url };
+          setLinks([...links, newLink]);
+          setName(''); setUrl('');
+          await supabaseClient.from('portal_links').insert([newLink]);
+        }
+      };
+
+      const deleteLink = async (id) => {
+        setLinks(links.filter(link => link.id !== id));
+        await supabaseClient.from('portal_links').delete().eq('id', id);
+      };
+
+      return (
+        <div className="space-y-6">
+          <h2 className="text-xl font-bold border-b-2 border-black pb-2">ポータル・リンク集</h2>
+          <div className="flex flex-col sm:flex-row gap-2 mb-6">
+            <input type="text" placeholder="サイト名" value={name} onChange={(e) => setName(e.target.value)} className="border border-black p-2 flex-1 focus:outline-none" />
+            <input type="url" placeholder="URL" value={url} onChange={(e) => setUrl(e.target.value)} className="border border-black p-2 flex-1 focus:outline-none" />
+            <button onClick={addLink} className="bg-black text-white px-6 py-2 font-bold hover:bg-gray-800">追加</button>
+          </div>
+          <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-4">
+            {links.map(link => (
+              <div key={link.id} className="border-2 border-black flex justify-between items-stretch">
+                <a href={link.url} target="_blank" rel="noopener noreferrer" className="p-4 font-bold flex-1 hover:bg-gray-100 transition-colors flex items-center break-all">
+                  {link.name} ↗
+                </a>
+                <button onClick={() => deleteLink(link.id)} className="px-4 border-l-2 border-black font-bold hover:bg-black hover:text-white transition-colors flex items-center justify-center">✕</button>
+              </div>
+            ))}
+          </div>
+        </div>
+      );
+    }
+
+    const root = ReactDOM.createRoot(document.getElementById('root'));
+    root.render(<App />);
+  </script>
+</body>
+</html>
