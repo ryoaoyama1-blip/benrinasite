@@ -162,8 +162,11 @@
   <!-- 1. Smart ToDo -->
   <div id="todo" class="content active">
     <div class="section-title">
-      Smart ToDo
-      <span style="font-size:12px; color:#6b7280;">※ 期日順自動ソート＆優先度表示</span>
+      <div>
+        Smart ToDo
+        <span style="font-size:12px; color:#6b7280; display:block;">※ 期日順自動ソート＆自動リマインド対応</span>
+      </div>
+      <button class="action-btn" style="font-size: 12px; padding: 8px 15px;" onclick="sendActiveTodosToLine()">📱 未完了ToDoをLINEに送信</button>
     </div>
     <div class="input-group">
       <input type="text" id="todo-input" placeholder="タスク名" style="flex-grow: 2;">
@@ -437,6 +440,7 @@
     function refreshAllViews() {
       document.getElementById('fin-date').value = new Date().toISOString().split('T')[0];
       document.getElementById('setting-gas-url').value = appData.gasUrl || '';
+      checkAndSendTodoReminders(); // 🔥 リマインド自動判定
       renderTodos();
       initEqTabs();
       renderEq();
@@ -465,6 +469,66 @@
     // ==========================================
     // 1. ToDo
     // ==========================================
+    function sendActiveTodosToLine() {
+      const activeTodos = (appData.todos || []).filter(t => !t.done);
+      if (activeTodos.length === 0) {
+        alert('未完了のToDoはありません！');
+        return;
+      }
+      let msg = "📝【未完了ToDoリスト】\n";
+      activeTodos.forEach(t => {
+        const dateStr = t.date ? ` (期日: ${t.date.replace('T', ' ')})` : '';
+        msg += `・${t.text}${dateStr}\n`;
+      });
+      sendLineNotify(msg);
+      alert('LINEに未完了ToDo一覧を送信しました！');
+    }
+
+    // 🔔 条件付き自動リマインド判定処理
+    function checkAndSendTodoReminders() {
+      if (!appData.todos || !appData.gasUrl) return;
+      const now = new Date();
+      const todayStr = now.toISOString().split('T')[0];
+      let updated = false;
+
+      const todayMidnight = new Date(now.getFullYear(), now.getMonth(), now.getDate());
+
+      appData.todos.forEach(todo => {
+        if (todo.done || !todo.date) return;
+
+        const dueDate = new Date(todo.date);
+        const dueMidnight = new Date(dueDate.getFullYear(), dueDate.getMonth(), dueDate.getDate());
+        
+        // 期限までの日数差
+        const diffDays = Math.round((dueMidnight - todayMidnight) / (1000 * 60 * 60 * 24));
+
+        // 本日すでにリマインド送信済みの場合はスキップ（二重送信防止）
+        if (todo.lastReminded === todayStr) return;
+
+        let shouldRemind = false;
+        let reminderMsg = "";
+
+        if (diffDays === 7) {
+          shouldRemind = true;
+          reminderMsg = `⏰【1週間前リマインド】\n「${todo.text}」の期日まであと1週間です！\n(期日: ${todo.date.replace('T', ' ')})`;
+        } else if (diffDays <= 5 && diffDays >= 0) {
+          shouldRemind = true;
+          const daysText = diffDays === 0 ? "本日です！" : `あと ${diffDays} 日です！`;
+          reminderMsg = `🚨【期限直前リマインド】\n「${todo.text}」の期日まで ${daysText}\n(期日: ${todo.date.replace('T', ' ')})`;
+        }
+
+        if (shouldRemind) {
+          sendLineNotify(reminderMsg);
+          todo.lastReminded = todayStr;
+          updated = true;
+        }
+      });
+
+      if (updated) {
+        saveData();
+      }
+    }
+
     function renderTodos() {
       const activeList = document.getElementById('todo-list-active');
       const doneList = document.getElementById('todo-list-done');
