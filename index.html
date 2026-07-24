@@ -5,41 +5,47 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>MY PORTAL</title>
   <style>
-    /* ベース設定 */
-    body { font-family: sans-serif; margin: 0; padding: 0; color: #333; background-color: #fafafa; }
-    header { border-bottom: 2px solid #000; padding: 15px 20px; display: flex; justify-content: space-between; align-items: center; background: #fff; }
-    h1 { margin: 0; font-size: 24px; letter-spacing: 2px; }
-    .user-info { font-size: 12px; color: #666; margin-top: 5px; }
-    .logout-btn { padding: 5px 15px; border: 2px solid #000; background: #fff; cursor: pointer; font-weight: bold; }
+    /* モダンでアプリらしいデザインに修正 */
+    body { font-family: 'Helvetica Neue', Arial, sans-serif; margin: 0; padding: 0; color: #333; background-color: #f4f7f6; }
+    
+    header { background: #fff; padding: 15px 30px; display: flex; justify-content: space-between; align-items: center; box-shadow: 0 2px 4px rgba(0,0,0,0.1); margin-bottom: 20px; }
+    h1 { margin: 0; font-size: 24px; color: #2c3e50; letter-spacing: 1px; }
+    .user-info { font-size: 13px; color: #7f8c8d; margin-top: 5px; }
+    .logout-btn { padding: 8px 16px; border: 1px solid #e74c3c; background: #fff; color: #e74c3c; border-radius: 20px; cursor: pointer; font-weight: bold; transition: all 0.2s; }
+    .logout-btn:hover { background: #e74c3c; color: #fff; }
     
     /* タブメニュー */
-    .tabs { display: flex; overflow-x: auto; border-bottom: 2px solid #000; background: #fff; padding: 10px 20px 0; gap: 10px; }
-    .tab-btn { padding: 10px 20px; border: 2px solid #000; border-bottom: none; background: #fff; cursor: pointer; font-weight: bold; white-space: nowrap; }
-    .tab-btn.active { background: #000; color: #fff; }
+    .tabs { display: flex; overflow-x: auto; background: #fff; padding: 0 20px; box-shadow: 0 2px 4px rgba(0,0,0,0.05); margin-bottom: 20px; }
+    .tab-btn { padding: 15px 20px; border: none; background: transparent; cursor: pointer; font-weight: bold; color: #95a5a6; border-bottom: 3px solid transparent; white-space: nowrap; font-size: 15px; transition: all 0.2s; }
+    .tab-btn:hover { color: #34495e; }
+    .tab-btn.active { color: #3498db; border-bottom: 3px solid #3498db; }
     
     /* コンテンツエリア */
-    .content { padding: 20px; max-width: 800px; margin: 0 auto; display: none; }
+    .content { padding: 30px; max-width: 800px; margin: 0 auto; display: none; background: #fff; border-radius: 8px; box-shadow: 0 4px 6px rgba(0,0,0,0.05); }
     .content.active { display: block; }
+    .section-title { border-bottom: 2px solid #ecf0f1; padding-bottom: 10px; margin-top: 0; margin-bottom: 20px; color: #2c3e50; }
     
-    /* 入力フォーム共通 */
-    .input-group { display: flex; gap: 10px; margin-bottom: 20px; flex-wrap: wrap; }
-    input[type="text"], input[type="number"], select { padding: 10px; border: 1px solid #ccc; flex-grow: 1; }
-    button.action-btn { padding: 10px 20px; background: #000; color: #fff; border: none; cursor: pointer; font-weight: bold; }
+    /* 入力フォーム */
+    .input-group { display: flex; gap: 10px; margin-bottom: 25px; flex-wrap: wrap; }
+    input[type="text"], input[type="number"], select { padding: 12px; border: 1px solid #bdc3c7; border-radius: 6px; flex-grow: 1; font-size: 14px; outline: none; }
+    input[type="text"]:focus, input[type="number"]:focus, select:focus { border-color: #3498db; }
+    button.action-btn { padding: 12px 24px; background: #3498db; color: #fff; border: none; border-radius: 6px; cursor: pointer; font-weight: bold; transition: background 0.2s; }
+    button.action-btn:hover { background: #2980b9; }
     
-    /* リスト共通 */
+    /* リスト */
     ul { list-style: none; padding: 0; margin: 0; }
-    li { display: flex; justify-content: space-between; padding: 15px; background: #fff; border: 1px solid #ddd; margin-bottom: 10px; align-items: center; }
-    .delete-btn { background: #ff4d4d; color: #fff; border: none; padding: 5px 10px; cursor: pointer; border-radius: 3px; }
+    li { display: flex; justify-content: space-between; padding: 15px 20px; background: #f9fbfb; border: 1px solid #ecf0f1; border-radius: 6px; margin-bottom: 10px; align-items: center; }
+    .delete-btn { background: #e74c3c; color: #fff; border: none; padding: 6px 12px; cursor: pointer; border-radius: 4px; font-size: 12px; transition: background 0.2s; }
+    .delete-btn:hover { background: #c0392b; }
     
-    /* 家計簿サマリー */
-    .finance-summary { display: flex; justify-content: space-between; background: #fff; padding: 15px; border: 2px solid #000; margin-bottom: 20px; font-weight: bold; }
+    /* 家計簿 */
+    .finance-summary { display: flex; justify-content: space-around; background: #f8f9fa; padding: 20px; border-radius: 8px; margin-bottom: 20px; font-weight: bold; font-size: 16px; border: 1px solid #ecf0f1; }
     .finance-income { color: #2ecc71; }
     .finance-expense { color: #e74c3c; }
 
-    /* レポート支援 */
-    textarea { width: 100%; height: 150px; padding: 10px; box-sizing: border-box; border: 1px solid #ccc; resize: vertical; margin-bottom: 10px; }
-    .section-title { border-bottom: 2px solid #000; padding-bottom: 5px; margin-bottom: 15px; }
-    .char-count { text-align: right; font-size: 12px; color: #666; margin-bottom: 5px; }
+    /* レポート */
+    textarea { width: 100%; height: 150px; padding: 12px; box-sizing: border-box; border: 1px solid #bdc3c7; border-radius: 6px; resize: vertical; margin-bottom: 10px; font-family: inherit; }
+    .char-count { text-align: right; font-size: 12px; color: #7f8c8d; }
   </style>
 </head>
 <body>
@@ -53,12 +59,13 @@
   </header>
 
   <div class="tabs">
-    <button class="tab-btn active" onclick="switchTab('todo')">📝 ToDo</button>
-    <button class="tab-btn" onclick="switchTab('equipment')">🛒 備品リスト</button>
-    <button class="tab-btn" onclick="switchTab('report')">📄 レポート支援</button>
-    <button class="tab-btn" onclick="switchTab('links')">🎓 リンク集</button>
-    <button class="tab-btn" onclick="switchTab('shopping')">🛍️ 買い物リスト</button>
-    <button class="tab-btn" onclick="switchTab('finance')">💰 家計簿</button>
+    <!-- JSのエラーを解消するため、onclickに「this」を追加しました -->
+    <button class="tab-btn active" onclick="switchTab('todo', this)">📝 ToDo</button>
+    <button class="tab-btn" onclick="switchTab('equipment', this)">🛒 備品リスト</button>
+    <button class="tab-btn" onclick="switchTab('report', this)">📄 レポート支援</button>
+    <button class="tab-btn" onclick="switchTab('links', this)">🎓 リンク集</button>
+    <button class="tab-btn" onclick="switchTab('shopping', this)">🛍️ 買い物リスト</button>
+    <button class="tab-btn" onclick="switchTab('finance', this)">💰 家計簿</button>
   </div>
 
   <!-- ToDo タブ -->
@@ -66,7 +73,7 @@
     <h2 class="section-title">ToDoリスト</h2>
     <div class="input-group">
       <input type="text" id="todo-input" placeholder="新しいタスクを入力...">
-      <select id="todo-priority">
+      <select id="todo-priority" style="max-width: 150px;">
         <option value="高">優先度: 高</option>
         <option value="中" selected>優先度: 中</option>
         <option value="低">優先度: 低</option>
@@ -91,16 +98,16 @@
     <h2 class="section-title">レポート作成アシスタント</h2>
     <button class="action-btn" style="margin-bottom: 20px;" onclick="window.open('https://notebooklm.google.com/', '_blank')">NotebookLM を開く ↗</button>
     
-    <div style="border: 2px solid #000; padding: 15px; margin-bottom: 20px;">
-      <div style="display: flex; justify-content: space-between;">
-        <strong>下書き・構成メモ</strong>
+    <div style="background: #f9fbfb; border: 1px solid #ecf0f1; border-radius: 8px; padding: 20px; margin-bottom: 20px;">
+      <div style="display: flex; justify-content: space-between; margin-bottom: 10px;">
+        <strong style="color: #2c3e50;">下書き・構成メモ</strong>
         <span class="char-count"><span id="char-count-val">0</span> 文字</span>
       </div>
       <textarea id="report-memo" placeholder="ここにレポートの構成や文章を入力..." oninput="updateCharCount()"></textarea>
     </div>
 
-    <div style="border: 2px solid #000; padding: 15px;">
-      <strong>参考文献 自動フォーマット</strong>
+    <div style="background: #f9fbfb; border: 1px solid #ecf0f1; border-radius: 8px; padding: 20px;">
+      <strong style="color: #2c3e50;">参考文献 自動フォーマット</strong>
       <textarea id="report-refs" placeholder="URLを改行で複数貼り付け" style="height: 100px; margin-top: 10px;"></textarea>
       <button class="action-btn">参考文献を出力</button>
     </div>
@@ -110,9 +117,9 @@
   <div id="links" class="content">
     <h2 class="section-title">リンク集</h2>
     <ul>
-      <li><a href="#" target="_blank">大学ポータルサイト</a></li>
-      <li><a href="#" target="_blank">Google Scholar</a></li>
-      <li><a href="#" target="_blank">図書館データベース</a></li>
+      <li><a href="#" target="_blank" style="color: #3498db; text-decoration: none; font-weight: bold;">大学ポータルサイト</a></li>
+      <li><a href="#" target="_blank" style="color: #3498db; text-decoration: none; font-weight: bold;">Google Scholar</a></li>
+      <li><a href="#" target="_blank" style="color: #3498db; text-decoration: none; font-weight: bold;">図書館データベース</a></li>
     </ul>
   </div>
 
@@ -133,41 +140,42 @@
     <div class="finance-summary">
       <span class="finance-income">収入合計: <span id="total-income">0</span>円</span>
       <span class="finance-expense">支出合計: <span id="total-expense">0</span>円</span>
-      <span>収支: <span id="total-balance">0</span>円</span>
+      <span style="color: #2c3e50;">現在の収支: <span id="total-balance">0</span>円</span>
     </div>
 
     <div class="input-group">
-      <select id="finance-type">
+      <select id="finance-type" style="max-width: 120px;">
         <option value="expense">支出</option>
         <option value="income">収入</option>
       </select>
-      <input type="text" id="finance-name" placeholder="項目（例：食費、バイト代）" style="width: 40%;">
-      <input type="number" id="finance-amount" placeholder="金額" style="width: 30%;">
+      <input type="text" id="finance-name" placeholder="項目（例：食費、バイト代）" style="flex-grow: 2;">
+      <input type="number" id="finance-amount" placeholder="金額" style="flex-grow: 1;">
       <button class="action-btn" onclick="addFinance()">追加</button>
     </div>
     <ul id="finance-list"></ul>
   </div>
 
   <script>
-    // ★★★ GAS URL ★★★
+    // ★★★ GASウェブアプリのURL（LINE通知用）★★★
     const GAS_URL = 'https://script.google.com/macros/s/AKfycbzWSTMccF34lDqPkjTgsZf-UCMq6ejYlAROxmEihd4bzzHkTmKHwg22tG6eocIlBuJUhA/exec';
 
-    // タブ切り替え機能
-    function switchTab(tabId) {
+    // タブ切り替え機能（エラーを修正しました）
+    function switchTab(tabId, btnElement) {
       document.querySelectorAll('.content').forEach(el => el.classList.remove('active'));
       document.querySelectorAll('.tab-btn').forEach(el => el.classList.remove('active'));
       document.getElementById(tabId).classList.add('active');
-      event.currentTarget.classList.add('active');
+      btnElement.classList.add('active');
     }
 
-    // 文字数カウント（レポート支援）
+    // 文字数カウント
     function updateCharCount() {
       const length = document.getElementById('report-memo').value.length;
       document.getElementById('char-count-val').innerText = length;
     }
 
-    // LINE通知送信機能
+    // LINE通知送信
     function sendLineNotify(message) {
+      if (!GAS_URL) return;
       fetch(GAS_URL, {
         method: 'POST',
         headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
@@ -175,33 +183,33 @@
       }).catch(err => console.error('LINE通知エラー:', err));
     }
 
-    // 汎用リスト追加（ToDo, 備品, 買い物）
+    // ToDo、備品、買い物リストの追加機能
     function addItem(type) {
       const input = document.getElementById(`${type}-input`);
       let text = input.value.trim();
       
       if (!text) return;
 
-      // ToDoの場合は優先度をつける
       let priorityText = "";
       if (type === 'todo') {
         const priority = document.getElementById('todo-priority').value;
-        priorityText = ` [${priority}]`;
+        priorityText = ` <span style="font-size: 12px; color: #7f8c8d; background: #ecf0f1; padding: 2px 6px; border-radius: 4px; margin-left: 10px;">[${priority}]</span>`;
       }
 
       const list = document.getElementById(`${type}-list`);
       const li = document.createElement('li');
-      li.innerHTML = `<span>${text} ${priorityText}</span> <button class="delete-btn" onclick="this.parentElement.remove()">削除</button>`;
+      li.innerHTML = `<span>${text}${priorityText}</span> <button class="delete-btn" onclick="this.parentElement.remove()">削除</button>`;
       list.appendChild(li);
 
-      // LINE通知のメッセージ作成
+      // LINE通知
       let tabName = type === 'todo' ? 'ToDo' : type === 'equipment' ? '備品' : '買い物';
-      sendLineNotify(`【${tabName}追加】\n${text}${priorityText}`);
+      let notifyText = type === 'todo' ? `${text} [優先度:${document.getElementById('todo-priority').value}]` : text;
+      sendLineNotify(`【${tabName}追加】\n${notifyText}`);
       
       input.value = '';
     }
 
-    // 家計簿の追加と計算
+    // 家計簿の計算機能
     let incomeTotal = 0;
     let expenseTotal = 0;
 
@@ -217,28 +225,25 @@
       
       let typeLabel = type === 'income' ? '収入' : '支出';
       let color = type === 'income' ? '#2ecc71' : '#e74c3c';
+      let bgColor = type === 'income' ? '#eafaf1' : '#fdedec';
 
       li.innerHTML = `
-        <span>[${typeLabel}] ${name}</span> 
+        <span><span style="font-size:12px; background:${bgColor}; color:${color}; padding:2px 6px; border-radius:4px; margin-right:10px;">${typeLabel}</span>${name}</span> 
         <strong style="color: ${color};">${amount.toLocaleString()}円</strong>
         <button class="delete-btn" onclick="removeFinance(this, '${type}', ${amount})">削除</button>
       `;
       list.appendChild(li);
 
-      // 合計計算
       if (type === 'income') incomeTotal += amount;
       if (type === 'expense') expenseTotal += amount;
       updateFinanceSummary();
 
-      // LINE通知
       sendLineNotify(`【家計簿追加】\n種別: ${typeLabel}\n項目: ${name}\n金額: ${amount.toLocaleString()}円`);
 
-      // 入力欄リセット
       document.getElementById('finance-name').value = '';
       document.getElementById('finance-amount').value = '';
     }
 
-    // 家計簿の削除
     function removeFinance(button, type, amount) {
       if (type === 'income') incomeTotal -= amount;
       if (type === 'expense') expenseTotal -= amount;
@@ -246,7 +251,6 @@
       button.parentElement.remove();
     }
 
-    // 家計簿のサマリー表示更新
     function updateFinanceSummary() {
       document.getElementById('total-income').innerText = incomeTotal.toLocaleString();
       document.getElementById('total-expense').innerText = expenseTotal.toLocaleString();
