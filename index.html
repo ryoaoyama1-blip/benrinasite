@@ -5,47 +5,64 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>MY PORTAL</title>
   <style>
-    /* モダンでアプリらしいデザインに修正 */
+    /* ベース設定 */
     body { font-family: 'Helvetica Neue', Arial, sans-serif; margin: 0; padding: 0; color: #333; background-color: #f4f7f6; }
-    
     header { background: #fff; padding: 15px 30px; display: flex; justify-content: space-between; align-items: center; box-shadow: 0 2px 4px rgba(0,0,0,0.1); margin-bottom: 20px; }
     h1 { margin: 0; font-size: 24px; color: #2c3e50; letter-spacing: 1px; }
     .user-info { font-size: 13px; color: #7f8c8d; margin-top: 5px; }
-    .logout-btn { padding: 8px 16px; border: 1px solid #e74c3c; background: #fff; color: #e74c3c; border-radius: 20px; cursor: pointer; font-weight: bold; transition: all 0.2s; }
-    .logout-btn:hover { background: #e74c3c; color: #fff; }
     
-    /* タブメニュー */
+    /* タブ */
     .tabs { display: flex; overflow-x: auto; background: #fff; padding: 0 20px; box-shadow: 0 2px 4px rgba(0,0,0,0.05); margin-bottom: 20px; }
     .tab-btn { padding: 15px 20px; border: none; background: transparent; cursor: pointer; font-weight: bold; color: #95a5a6; border-bottom: 3px solid transparent; white-space: nowrap; font-size: 15px; transition: all 0.2s; }
     .tab-btn:hover { color: #34495e; }
     .tab-btn.active { color: #3498db; border-bottom: 3px solid #3498db; }
     
     /* コンテンツエリア */
-    .content { padding: 30px; max-width: 800px; margin: 0 auto; display: none; background: #fff; border-radius: 8px; box-shadow: 0 4px 6px rgba(0,0,0,0.05); }
+    .content { padding: 20px 30px; max-width: 900px; margin: 0 auto 40px; display: none; background: #fff; border-radius: 8px; box-shadow: 0 4px 6px rgba(0,0,0,0.05); }
     .content.active { display: block; }
     .section-title { border-bottom: 2px solid #ecf0f1; padding-bottom: 10px; margin-top: 0; margin-bottom: 20px; color: #2c3e50; }
     
-    /* 入力フォーム */
-    .input-group { display: flex; gap: 10px; margin-bottom: 25px; flex-wrap: wrap; }
-    input[type="text"], input[type="number"], select { padding: 12px; border: 1px solid #bdc3c7; border-radius: 6px; flex-grow: 1; font-size: 14px; outline: none; }
-    input[type="text"]:focus, input[type="number"]:focus, select:focus { border-color: #3498db; }
-    button.action-btn { padding: 12px 24px; background: #3498db; color: #fff; border: none; border-radius: 6px; cursor: pointer; font-weight: bold; transition: background 0.2s; }
+    /* フォーム要素 */
+    .input-group { display: flex; gap: 10px; margin-bottom: 20px; flex-wrap: wrap; align-items: center; }
+    input[type="text"], input[type="number"], input[type="date"], select { padding: 10px; border: 1px solid #bdc3c7; border-radius: 6px; flex-grow: 1; outline: none; }
+    button.action-btn { padding: 10px 20px; background: #3498db; color: #fff; border: none; border-radius: 6px; cursor: pointer; font-weight: bold; }
     button.action-btn:hover { background: #2980b9; }
     
     /* リスト */
     ul { list-style: none; padding: 0; margin: 0; }
-    li { display: flex; justify-content: space-between; padding: 15px 20px; background: #f9fbfb; border: 1px solid #ecf0f1; border-radius: 6px; margin-bottom: 10px; align-items: center; }
-    .delete-btn { background: #e74c3c; color: #fff; border: none; padding: 6px 12px; cursor: pointer; border-radius: 4px; font-size: 12px; transition: background 0.2s; }
-    .delete-btn:hover { background: #c0392b; }
+    li { display: flex; justify-content: space-between; padding: 12px 15px; background: #f9fbfb; border: 1px solid #ecf0f1; border-radius: 6px; margin-bottom: 8px; align-items: center; }
+    .delete-btn { background: #e74c3c; color: #fff; border: none; padding: 5px 10px; cursor: pointer; border-radius: 4px; font-size: 12px; }
     
-    /* 家計簿 */
-    .finance-summary { display: flex; justify-content: space-around; background: #f8f9fa; padding: 20px; border-radius: 8px; margin-bottom: 20px; font-weight: bold; font-size: 16px; border: 1px solid #ecf0f1; }
-    .finance-income { color: #2ecc71; }
-    .finance-expense { color: #e74c3c; }
-
+    /* ToDo専用 */
+    .priority-high { border-left: 5px solid #e74c3c; background: #fdf5f5; font-weight: bold; }
+    .priority-mid { border-left: 5px solid #f39c12; }
+    .todo-item { cursor: pointer; flex-grow: 1; }
+    
+    /* モーダル */
+    .modal-overlay { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.5); justify-content: center; align-items: center; z-index: 1000; }
+    .modal-content { background: #fff; padding: 20px; border-radius: 8px; width: 90%; max-width: 400px; }
+    
+    /* 備品エリアタブ */
+    .sub-tabs { display: flex; gap: 5px; margin-bottom: 15px; }
+    .sub-tab-btn { padding: 8px 12px; border: 1px solid #bdc3c7; background: #ecf0f1; border-radius: 4px; cursor: pointer; font-size: 13px; }
+    .sub-tab-btn.active { background: #34495e; color: #fff; border-color: #34495e; }
+    
+    /* リンク集 ドラッグ＆ドロップ */
+    .drag-handle { cursor: grab; padding: 0 10px; color: #bdc3c7; font-size: 20px; user-select: none; }
+    .drag-over { border: 2px dashed #3498db; }
+    
+    /* 通帳風 家計簿 */
+    .passbook-container { background: #fdf6e3; padding: 20px; border-radius: 8px; border: 1px solid #dcdde1; box-shadow: inset 0 0 10px rgba(0,0,0,0.05); font-family: 'Courier New', Courier, monospace; }
+    .passbook-table { width: 100%; border-collapse: collapse; background: #fff; }
+    .passbook-table th { border: 1px solid #7f8c8d; background: #ecf0f1; padding: 8px; text-align: center; color: #2c3e50; }
+    .passbook-table td { border: 1px solid #bdc3c7; padding: 8px; text-align: right; cursor: pointer; }
+    .passbook-table td:nth-child(2) { text-align: left; }
+    .passbook-table tr:hover td { background: #f1f2f6; }
+    .pb-income { color: #2ecc71; }
+    .pb-expense { color: #e74c3c; }
+    
     /* レポート */
-    textarea { width: 100%; height: 150px; padding: 12px; box-sizing: border-box; border: 1px solid #bdc3c7; border-radius: 6px; resize: vertical; margin-bottom: 10px; font-family: inherit; }
-    .char-count { text-align: right; font-size: 12px; color: #7f8c8d; }
+    textarea { width: 100%; padding: 10px; border: 1px solid #bdc3c7; border-radius: 6px; box-sizing: border-box; resize: vertical; }
   </style>
 </head>
 <body>
@@ -55,207 +72,485 @@
       <h1>MY PORTAL</h1>
       <div class="user-info">ryo.aaa0621@icloud.com でログイン中</div>
     </div>
-    <button class="logout-btn">ログアウト</button>
   </header>
 
   <div class="tabs">
-    <!-- JSのエラーを解消するため、onclickに「this」を追加しました -->
-    <button class="tab-btn active" onclick="switchTab('todo', this)">📝 ToDo</button>
-    <button class="tab-btn" onclick="switchTab('equipment', this)">🛒 備品リスト</button>
-    <button class="tab-btn" onclick="switchTab('report', this)">📄 レポート支援</button>
+    <button class="tab-btn active" onclick="switchTab('todo', this)">📝 Smart ToDo</button>
+    <button class="tab-btn" onclick="switchTab('equipment', this)">🛒 備品管理</button>
+    <button class="tab-btn" onclick="switchTab('shopping', this)">🛍️ 買い物</button>
+    <button class="tab-btn" onclick="switchTab('finance', this)">🏦 家計簿</button>
+    <button class="tab-btn" onclick="switchTab('report', this)">📄 レポート</button>
     <button class="tab-btn" onclick="switchTab('links', this)">🎓 リンク集</button>
-    <button class="tab-btn" onclick="switchTab('shopping', this)">🛍️ 買い物リスト</button>
-    <button class="tab-btn" onclick="switchTab('finance', this)">💰 家計簿</button>
   </div>
 
-  <!-- ToDo タブ -->
+  <!-- Smart ToDo -->
   <div id="todo" class="content active">
-    <h2 class="section-title">ToDoリスト</h2>
+    <h2 class="section-title">Smart ToDo</h2>
     <div class="input-group">
-      <input type="text" id="todo-input" placeholder="新しいタスクを入力...">
-      <select id="todo-priority" style="max-width: 150px;">
-        <option value="高">優先度: 高</option>
-        <option value="中" selected>優先度: 中</option>
-        <option value="低">優先度: 低</option>
-      </select>
-      <button class="action-btn" onclick="addItem('todo')">追加</button>
+      <input type="text" id="todo-input" placeholder="タスク名" style="flex-grow: 2;">
+      <input type="date" id="todo-date">
+      <button class="action-btn" onclick="addTodo()">追加</button>
     </div>
     <ul id="todo-list"></ul>
   </div>
 
-  <!-- 備品リスト タブ -->
+  <!-- 備品管理 -->
   <div id="equipment" class="content">
-    <h2 class="section-title">備品リスト</h2>
+    <h2 class="section-title">備品リスト（エリア別）</h2>
+    <div class="sub-tabs" id="eq-tabs">
+      <!-- JSで生成 -->
+    </div>
     <div class="input-group">
-      <input type="text" id="equipment-input" placeholder="必要な備品を入力...">
-      <button class="action-btn" onclick="addItem('equipment')">追加</button>
+      <input type="text" id="eq-input" placeholder="備品名">
+      <input type="number" id="eq-count" placeholder="個数" value="1" style="max-width: 80px;">
+      <button class="action-btn" onclick="addEq()">追加</button>
     </div>
-    <ul id="equipment-list"></ul>
+    <ul id="eq-list"></ul>
   </div>
 
-  <!-- レポート支援 タブ -->
-  <div id="report" class="content">
-    <h2 class="section-title">レポート作成アシスタント</h2>
-    <button class="action-btn" style="margin-bottom: 20px;" onclick="window.open('https://notebooklm.google.com/', '_blank')">NotebookLM を開く ↗</button>
-    
-    <div style="background: #f9fbfb; border: 1px solid #ecf0f1; border-radius: 8px; padding: 20px; margin-bottom: 20px;">
-      <div style="display: flex; justify-content: space-between; margin-bottom: 10px;">
-        <strong style="color: #2c3e50;">下書き・構成メモ</strong>
-        <span class="char-count"><span id="char-count-val">0</span> 文字</span>
-      </div>
-      <textarea id="report-memo" placeholder="ここにレポートの構成や文章を入力..." oninput="updateCharCount()"></textarea>
-    </div>
-
-    <div style="background: #f9fbfb; border: 1px solid #ecf0f1; border-radius: 8px; padding: 20px;">
-      <strong style="color: #2c3e50;">参考文献 自動フォーマット</strong>
-      <textarea id="report-refs" placeholder="URLを改行で複数貼り付け" style="height: 100px; margin-top: 10px;"></textarea>
-      <button class="action-btn">参考文献を出力</button>
-    </div>
-  </div>
-
-  <!-- リンク集 タブ -->
-  <div id="links" class="content">
-    <h2 class="section-title">リンク集</h2>
-    <ul>
-      <li><a href="#" target="_blank" style="color: #3498db; text-decoration: none; font-weight: bold;">大学ポータルサイト</a></li>
-      <li><a href="#" target="_blank" style="color: #3498db; text-decoration: none; font-weight: bold;">Google Scholar</a></li>
-      <li><a href="#" target="_blank" style="color: #3498db; text-decoration: none; font-weight: bold;">図書館データベース</a></li>
-    </ul>
-  </div>
-
-  <!-- 買い物リスト タブ -->
+  <!-- 買い物リスト -->
   <div id="shopping" class="content">
-    <h2 class="section-title">買い物リスト</h2>
+    <h2 class="section-title">買い物リスト ＆ 会計</h2>
     <div class="input-group">
-      <input type="text" id="shopping-input" placeholder="買うものを入力...">
-      <button class="action-btn" onclick="addItem('shopping')">追加</button>
+      <input type="text" id="shop-input" placeholder="買うもの">
+      <input type="number" id="shop-price" placeholder="予定価格(任意)" style="max-width: 120px;">
+      <button class="action-btn" onclick="addShop()">追加</button>
     </div>
-    <ul id="shopping-list"></ul>
+    <ul id="shop-list" style="margin-bottom: 20px;"></ul>
+    
+    <div style="background: #eaf2f8; padding: 15px; border-radius: 8px; text-align: center;">
+      <p style="margin-top: 0; font-weight: bold;">チェックした項目を家計簿に記録</p>
+      <select id="shop-payment" style="margin-bottom: 10px; width: 200px;">
+        <option value="現金">現金</option>
+        <option value="クレジットカード">クレジットカード</option>
+        <option value="PayPay">PayPay</option>
+      </select><br>
+      <button class="action-btn" style="background: #27ae60; width: 100%; font-size: 16px;" onclick="checkoutShopping()">買い物完了 ＆ 家計簿へ記録</button>
+    </div>
   </div>
 
-  <!-- 家計簿 タブ -->
+  <!-- 🏦 家計簿 -->
   <div id="finance" class="content">
-    <h2 class="section-title">家計簿</h2>
-    
-    <div class="finance-summary">
-      <span class="finance-income">収入合計: <span id="total-income">0</span>円</span>
-      <span class="finance-expense">支出合計: <span id="total-expense">0</span>円</span>
-      <span style="color: #2c3e50;">現在の収支: <span id="total-balance">0</span>円</span>
-    </div>
-
+    <h2 class="section-title">家計簿帳</h2>
     <div class="input-group">
-      <select id="finance-type" style="max-width: 120px;">
+      <select id="fin-type" style="max-width: 80px;">
         <option value="expense">支出</option>
         <option value="income">収入</option>
       </select>
-      <input type="text" id="finance-name" placeholder="項目（例：食費、バイト代）" style="flex-grow: 2;">
-      <input type="number" id="finance-amount" placeholder="金額" style="flex-grow: 1;">
-      <button class="action-btn" onclick="addFinance()">追加</button>
+      <input type="date" id="fin-date">
+      <input type="text" id="fin-name" placeholder="項目名">
+      <input type="number" id="fin-amount" placeholder="金額">
+      <button class="action-btn" onclick="addFinance()">記帳</button>
     </div>
-    <ul id="finance-list"></ul>
+
+    <div class="passbook-container">
+      <p style="margin-top:0; font-weight:bold; color:#7f8c8d; text-align:right;">総合残高: <span id="pb-total" style="color:#2c3e50; font-size:20px;">0</span> 円</p>
+      <table class="passbook-table">
+        <thead>
+          <tr>
+            <th width="15%">日付</th>
+            <th width="35%">摘要</th>
+            <th width="15%">お支払金額</th>
+            <th width="15%">お預り金額</th>
+            <th width="20%">差引残高</th>
+          </tr>
+        </thead>
+        <tbody id="finance-list"></tbody>
+      </table>
+      <p style="font-size: 12px; color: #95a5a6; margin-top: 10px;">※ 行をクリックすると修正・削除ができます</p>
+    </div>
+  </div>
+
+  <!-- 📄 レポート -->
+  <div id="report" class="content">
+    <h2 class="section-title">レポート作成支援</h2>
+    <button class="action-btn" style="margin-bottom: 20px; background: #8e44ad;" onclick="window.open('https://notebooklm.google.com/', '_blank')">NotebookLM を開く ↗</button>
+    <div style="display: flex; justify-content: space-between; margin-bottom: 5px;">
+      <strong>下書きメモ</strong>
+      <span style="font-size: 12px; color: #7f8c8d;"><span id="char-count">0</span> 文字</span>
+    </div>
+    <textarea id="report-memo" rows="6" oninput="document.getElementById('char-count').innerText = this.value.length;" placeholder="ここに構成や文章を入力..."></textarea>
+    
+    <div style="margin-top: 20px;">
+      <strong>参考文献 ジェネレーター</strong>
+      <textarea id="ref-input" rows="3" placeholder="URLを改行で複数貼り付け" style="margin-top: 5px;"></textarea>
+      <button class="action-btn" style="margin-top: 10px;" onclick="generateRefs()">参考文献形式に変換</button>
+      <textarea id="ref-output" rows="3" style="margin-top: 10px; background: #ecf0f1;" readonly placeholder="結果がここに出ます"></textarea>
+    </div>
+  </div>
+
+  <!-- 🎓 リンク集 -->
+  <div id="links" class="content">
+    <h2 class="section-title">ランチャー（リンク集）</h2>
+    <div class="input-group">
+      <input type="text" id="link-name" placeholder="サイト名">
+      <input type="text" id="link-url" placeholder="URL (https://...)">
+      <button class="action-btn" onclick="addLink()">追加</button>
+    </div>
+    <p style="font-size: 12px; color: #7f8c8d;">※ ⣿ を掴んでドラッグ＆ドロップで並び替えできます</p>
+    <ul id="links-list"></ul>
+  </div>
+
+  <!-- ToDo詳細モーダル -->
+  <div class="modal-overlay" id="todo-modal">
+    <div class="modal-content">
+      <h3 id="modal-title" style="margin-top:0;"></h3>
+      <textarea id="modal-memo" rows="5" placeholder="詳細メモ..."></textarea>
+      <div style="display: flex; justify-content: flex-end; gap: 10px; margin-top: 15px;">
+        <button class="action-btn" style="background: #95a5a6;" onclick="closeModal()">閉じる</button>
+        <button class="action-btn" onclick="saveTodoMemo()">保存</button>
+      </div>
+    </div>
   </div>
 
   <script>
-    // ★★★ GASウェブアプリのURL（LINE通知用）★★★
     const GAS_URL = 'https://script.google.com/macros/s/AKfycbzWSTMccF34lDqPkjTgsZf-UCMq6ejYlAROxmEihd4bzzHkTmKHwg22tG6eocIlBuJUhA/exec';
 
-    // タブ切り替え機能（エラーを修正しました）
-    function switchTab(tabId, btnElement) {
+    // 共通: LINE通知
+    function sendLineNotify(message) {
+      if(!GAS_URL) return;
+      fetch(GAS_URL, { method: 'POST', headers: { 'Content-Type': 'application/x-www-form-urlencoded' }, body: 'message=' + encodeURIComponent(message) }).catch(e=>console.log(e));
+    }
+
+    // 共通: タブ切り替え
+    function switchTab(tabId, btn) {
       document.querySelectorAll('.content').forEach(el => el.classList.remove('active'));
       document.querySelectorAll('.tab-btn').forEach(el => el.classList.remove('active'));
       document.getElementById(tabId).classList.add('active');
-      btnElement.classList.add('active');
+      if(btn) btn.classList.add('active');
     }
 
-    // 文字数カウント
-    function updateCharCount() {
-      const length = document.getElementById('report-memo').value.length;
-      document.getElementById('char-count-val').innerText = length;
+    // --- State & LocalStorage ---
+    const DB_KEY = 'myportal_data';
+    let appData = JSON.parse(localStorage.getItem(DB_KEY)) || {
+      todos: [],
+      equipments: { 'リビング':[], 'トイレ':[], '洗面所':[], 'キッチン':[], '風呂':[] },
+      shopping: [],
+      finance: [],
+      links: [
+        { id: 'l1', name: '大学ポータル', url: 'https://example.com' },
+        { id: 'l2', name: 'Webシラバス', url: 'https://example.com' }
+      ]
+    };
+    function saveData() { localStorage.setItem(DB_KEY, JSON.stringify(appData)); }
+
+    // ==========================================
+    // 📝 Smart ToDo
+    // ==========================================
+    let currentTodoId = null;
+
+    function renderTodos() {
+      const list = document.getElementById('todo-list');
+      list.innerHTML = '';
+      const now = new Date();
+
+      appData.todos.forEach(todo => {
+        let cls = '';
+        let priorityLabel = '低';
+        let isUrgent = false;
+
+        if (todo.date) {
+          const due = new Date(todo.date);
+          const diffHrs = (due - now) / (1000 * 60 * 60);
+          
+          if (diffHrs <= 120) { // 5日以内
+            cls = 'priority-high'; priorityLabel = '最高'; isUrgent = true;
+          } else if (diffHrs <= 168) { // 1週間以内
+            cls = 'priority-mid'; priorityLabel = '中'; isUrgent = true;
+          }
+          
+          // 1週間以内で未通知ならLINE送信
+          if (isUrgent && !todo.notified && !todo.done) {
+            sendLineNotify(`⚠️【期限間近タスク】\n${todo.text}\n期限: ${todo.date}`);
+            todo.notified = true;
+            saveData();
+          }
+        }
+
+        list.innerHTML += `
+          <li class="${cls}" style="${todo.done ? 'opacity:0.5;' : ''}">
+            <input type="checkbox" ${todo.done ? 'checked' : ''} onchange="toggleTodo('${todo.id}')" style="margin-right:10px;">
+            <div class="todo-item" onclick="openModal('${todo.id}')">
+              <span style="${todo.done ? 'text-decoration:line-through;' : ''}">${todo.text}</span>
+              ${todo.date ? `<span style="font-size:12px; color:#7f8c8d; margin-left:10px;">⏳ ${todo.date} [${priorityLabel}]</span>` : ''}
+            </div>
+            <button class="delete-btn" onclick="deleteTodo('${todo.id}')">削除</button>
+          </li>
+        `;
+      });
     }
 
-    // LINE通知送信
-    function sendLineNotify(message) {
-      if (!GAS_URL) return;
-      fetch(GAS_URL, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
-        body: 'message=' + encodeURIComponent(message)
-      }).catch(err => console.error('LINE通知エラー:', err));
-    }
-
-    // ToDo、備品、買い物リストの追加機能
-    function addItem(type) {
-      const input = document.getElementById(`${type}-input`);
-      let text = input.value.trim();
-      
+    function addTodo() {
+      const text = document.getElementById('todo-input').value;
+      const date = document.getElementById('todo-date').value;
       if (!text) return;
-
-      let priorityText = "";
-      if (type === 'todo') {
-        const priority = document.getElementById('todo-priority').value;
-        priorityText = ` <span style="font-size: 12px; color: #7f8c8d; background: #ecf0f1; padding: 2px 6px; border-radius: 4px; margin-left: 10px;">[${priority}]</span>`;
-      }
-
-      const list = document.getElementById(`${type}-list`);
-      const li = document.createElement('li');
-      li.innerHTML = `<span>${text}${priorityText}</span> <button class="delete-btn" onclick="this.parentElement.remove()">削除</button>`;
-      list.appendChild(li);
-
-      // LINE通知
-      let tabName = type === 'todo' ? 'ToDo' : type === 'equipment' ? '備品' : '買い物';
-      let notifyText = type === 'todo' ? `${text} [優先度:${document.getElementById('todo-priority').value}]` : text;
-      sendLineNotify(`【${tabName}追加】\n${notifyText}`);
-      
-      input.value = '';
+      appData.todos.push({ id: Date.now().toString(), text, date, detail: '', done: false, notified: false });
+      document.getElementById('todo-input').value = '';
+      saveData(); renderTodos();
+    }
+    function toggleTodo(id) {
+      const t = appData.todos.find(x => x.id === id);
+      if(t) { t.done = !t.done; saveData(); renderTodos(); }
+    }
+    function deleteTodo(id) {
+      appData.todos = appData.todos.filter(x => x.id !== id);
+      saveData(); renderTodos();
+    }
+    function openModal(id) {
+      const t = appData.todos.find(x => x.id === id);
+      currentTodoId = id;
+      document.getElementById('modal-title').innerText = t.text;
+      document.getElementById('modal-memo').value = t.detail || '';
+      document.getElementById('todo-modal').style.display = 'flex';
+    }
+    function closeModal() { document.getElementById('todo-modal').style.display = 'none'; }
+    function saveTodoMemo() {
+      const t = appData.todos.find(x => x.id === currentTodoId);
+      if(t) { t.detail = document.getElementById('modal-memo').value; saveData(); }
+      closeModal();
     }
 
-    // 家計簿の計算機能
-    let incomeTotal = 0;
-    let expenseTotal = 0;
+    // ==========================================
+    // 🛒 備品管理
+    // ==========================================
+    const areas = ['リビング', 'トイレ', '洗面所', 'キッチン', '風呂'];
+    let currentArea = 'リビング';
+
+    function initEqTabs() {
+      const tabContainer = document.getElementById('eq-tabs');
+      tabContainer.innerHTML = areas.map(area => 
+        `<button class="sub-tab-btn ${area===currentArea?'active':''}" onclick="changeEqArea('${area}')">${area}</button>`
+      ).join('');
+      renderEq();
+    }
+    function changeEqArea(area) { currentArea = area; initEqTabs(); }
+
+    function renderEq() {
+      const list = document.getElementById('eq-list');
+      list.innerHTML = '';
+      (appData.equipments[currentArea] || []).forEach(eq => {
+        list.innerHTML += `
+          <li>
+            <span>${eq.name}</span>
+            <div style="display:flex; align-items:center; gap:10px;">
+              <button onclick="updateEq('${eq.id}', -1)" style="padding:2px 8px;">-</button>
+              <strong>${eq.count}</strong>
+              <button onclick="updateEq('${eq.id}', 1)" style="padding:2px 8px;">+</button>
+              <button class="delete-btn" onclick="deleteEq('${eq.id}')">削除</button>
+            </div>
+          </li>
+        `;
+      });
+    }
+
+    function addEq() {
+      const name = document.getElementById('eq-input').value;
+      const count = parseInt(document.getElementById('eq-count').value) || 1;
+      if(!name) return;
+      appData.equipments[currentArea].push({ id: Date.now().toString(), name, count });
+      document.getElementById('eq-input').value = '';
+      saveData(); renderEq();
+    }
+    
+    function updateEq(id, change) {
+      let eq = appData.equipments[currentArea].find(x => x.id === id);
+      if(eq) {
+        eq.count += change;
+        if(eq.count <= 0) {
+          eq.count = 0;
+          // ストック0で買い物リストへ自動追加
+          if(!appData.shopping.find(x => x.name === eq.name && !x.done)) {
+            appData.shopping.push({ id: Date.now().toString(), name: eq.name, price: 0, checked: false });
+            sendLineNotify(`🛒【買い出しアラート】\n${currentArea}の「${eq.name}」が0になりました！\n買い物リストに追加しました。`);
+          }
+        }
+        saveData(); renderEq(); renderShopping();
+      }
+    }
+    function deleteEq(id) {
+      appData.equipments[currentArea] = appData.equipments[currentArea].filter(x => x.id !== id);
+      saveData(); renderEq();
+    }
+
+    // ==========================================
+    // 🛍️ 買い物 ＆ 家計簿連携
+    // ==========================================
+    function renderShopping() {
+      const list = document.getElementById('shop-list');
+      list.innerHTML = '';
+      appData.shopping.forEach(item => {
+        list.innerHTML += `
+          <li>
+            <div style="display:flex; align-items:center; gap:10px;">
+              <input type="checkbox" ${item.checked ? 'checked' : ''} onchange="toggleShop('${item.id}')">
+              <span>${item.name}</span>
+            </div>
+            <div>
+              <input type="number" value="${item.price}" onchange="updateShopPrice('${item.id}', this.value)" style="width:80px; padding:5px; margin-right:10px;" placeholder="金額">円
+              <button class="delete-btn" onclick="deleteShop('${item.id}')">削除</button>
+            </div>
+          </li>
+        `;
+      });
+    }
+
+    function addShop() {
+      const name = document.getElementById('shop-input').value;
+      const price = document.getElementById('shop-price').value || 0;
+      if(!name) return;
+      appData.shopping.push({ id: Date.now().toString(), name, price: parseInt(price), checked: false });
+      document.getElementById('shop-input').value = ''; document.getElementById('shop-price').value = '';
+      saveData(); renderShopping();
+    }
+    function toggleShop(id) {
+      let item = appData.shopping.find(x => x.id === id);
+      if(item) { item.checked = !item.checked; saveData(); }
+    }
+    function updateShopPrice(id, val) {
+      let item = appData.shopping.find(x => x.id === id);
+      if(item) { item.price = parseInt(val) || 0; saveData(); }
+    }
+    function deleteShop(id) {
+      appData.shopping = appData.shopping.filter(x => x.id !== id);
+      saveData(); renderShopping();
+    }
+
+    // 一括会計
+    function checkoutShopping() {
+      const checkedItems = appData.shopping.filter(x => x.checked);
+      if(checkedItems.length === 0) { alert('家計簿に記録する項目をチェックしてください！'); return; }
+      
+      let total = checkedItems.reduce((sum, item) => sum + item.price, 0);
+      const method = document.getElementById('shop-payment').value;
+      const names = checkedItems.map(x => x.name).join(' / ');
+
+      // 家計簿に追加
+      const today = new Date().toISOString().split('T')[0];
+      appData.finance.push({
+        id: Date.now().toString(), date: today, type: 'expense', name: `買物: ${names} (${method})`, amount: total
+      });
+      
+      // 買い物リストから削除
+      appData.shopping = appData.shopping.filter(x => !x.checked);
+      saveData(); renderShopping(); renderFinance(); switchTab('finance');
+      sendLineNotify(`🏦【家計簿記録】\nお買い物完了！\n金額: ${total}円\n支払: ${method}\n内容: ${names}`);
+    }
+
+    // ==========================================
+    // 🏦 通帳風 家計簿
+    // ==========================================
+    function renderFinance() {
+      const list = document.getElementById('finance-list');
+      list.innerHTML = '';
+      
+      // 日付順にソート
+      appData.finance.sort((a, b) => new Date(a.date) - new Date(b.date));
+      
+      let balance = 0;
+      appData.finance.forEach(f => {
+        if(f.type === 'income') balance += f.amount;
+        else balance -= f.amount;
+
+        const incomeStr = f.type === 'income' ? `<span class="pb-income">${f.amount.toLocaleString()}</span>` : '';
+        const expenseStr = f.type === 'expense' ? `<span class="pb-expense">${f.amount.toLocaleString()}</span>` : '';
+
+        list.innerHTML += `
+          <tr onclick="editFinance('${f.id}')">
+            <td>${f.date}</td>
+            <td>${f.name}</td>
+            <td>${expenseStr}</td>
+            <td>${incomeStr}</td>
+            <td><strong>${balance.toLocaleString()}</strong></td>
+          </tr>
+        `;
+      });
+      document.getElementById('pb-total').innerText = balance.toLocaleString();
+    }
 
     function addFinance() {
-      const type = document.getElementById('finance-type').value;
-      const name = document.getElementById('finance-name').value.trim();
-      const amount = parseInt(document.getElementById('finance-amount').value);
+      const type = document.getElementById('fin-type').value;
+      const date = document.getElementById('fin-date').value || new Date().toISOString().split('T')[0];
+      const name = document.getElementById('fin-name').value;
+      const amount = parseInt(document.getElementById('fin-amount').value);
 
-      if (!name || isNaN(amount)) return;
-
-      const list = document.getElementById('finance-list');
-      const li = document.createElement('li');
+      if(!name || !amount) return;
+      appData.finance.push({ id: Date.now().toString(), type, date, name, amount });
       
-      let typeLabel = type === 'income' ? '収入' : '支出';
-      let color = type === 'income' ? '#2ecc71' : '#e74c3c';
-      let bgColor = type === 'income' ? '#eafaf1' : '#fdedec';
-
-      li.innerHTML = `
-        <span><span style="font-size:12px; background:${bgColor}; color:${color}; padding:2px 6px; border-radius:4px; margin-right:10px;">${typeLabel}</span>${name}</span> 
-        <strong style="color: ${color};">${amount.toLocaleString()}円</strong>
-        <button class="delete-btn" onclick="removeFinance(this, '${type}', ${amount})">削除</button>
-      `;
-      list.appendChild(li);
-
-      if (type === 'income') incomeTotal += amount;
-      if (type === 'expense') expenseTotal += amount;
-      updateFinanceSummary();
-
-      sendLineNotify(`【家計簿追加】\n種別: ${typeLabel}\n項目: ${name}\n金額: ${amount.toLocaleString()}円`);
-
-      document.getElementById('finance-name').value = '';
-      document.getElementById('finance-amount').value = '';
+      document.getElementById('fin-name').value = ''; document.getElementById('fin-amount').value = '';
+      saveData(); renderFinance();
     }
 
-    function removeFinance(button, type, amount) {
-      if (type === 'income') incomeTotal -= amount;
-      if (type === 'expense') expenseTotal -= amount;
-      updateFinanceSummary();
-      button.parentElement.remove();
+    function editFinance(id) {
+      if(confirm('この記録を削除してよろしいですか？（※修正する場合は削除後に再度入力してください）')) {
+        appData.finance = appData.finance.filter(x => x.id !== id);
+        saveData(); renderFinance();
+      }
     }
 
-    function updateFinanceSummary() {
-      document.getElementById('total-income').innerText = incomeTotal.toLocaleString();
-      document.getElementById('total-expense').innerText = expenseTotal.toLocaleString();
-      document.getElementById('total-balance').innerText = (incomeTotal - expenseTotal).toLocaleString();
+    // ==========================================
+    // 📄 レポート & 🎓 リンク集 (D&D)
+    // ==========================================
+    function generateRefs() {
+      const urls = document.getElementById('ref-input').value.split('\n').filter(u => u.trim() !== '');
+      const d = new Date();
+      const dateStr = `${d.getFullYear()}年${d.getMonth()+1}月${d.getDate()}日`;
+      const result = urls.map(url => `著者名(不明). "記事タイトル". サイト名. ${url}, (参照 ${dateStr}).`).join('\n');
+      document.getElementById('ref-output').value = result;
     }
+
+    // ドラッグ＆ドロップ実装
+    let draggedIndex = null;
+    
+    function renderLinks() {
+      const list = document.getElementById('links-list');
+      list.innerHTML = '';
+      appData.links.forEach((link, index) => {
+        const li = document.createElement('li');
+        li.draggable = true;
+        li.innerHTML = `
+          <div style="display:flex; align-items:center;">
+            <span class="drag-handle">⣿</span>
+            <a href="${link.url}" target="_blank" style="color:#3498db; font-weight:bold; text-decoration:none;">${link.name}</a>
+          </div>
+          <button class="delete-btn" onclick="deleteLink('${link.id}')">削除</button>
+        `;
+        
+        li.addEventListener('dragstart', () => { draggedIndex = index; });
+        li.addEventListener('dragover', (e) => { e.preventDefault(); li.classList.add('drag-over'); });
+        li.addEventListener('dragleave', () => li.classList.remove('drag-over'));
+        li.addEventListener('drop', () => {
+          li.classList.remove('drag-over');
+          const item = appData.links.splice(draggedIndex, 1)[0];
+          appData.links.splice(index, 0, item);
+          saveData(); renderLinks();
+        });
+        
+        list.appendChild(li);
+      });
+    }
+
+    function addLink() {
+      const name = document.getElementById('link-name').value;
+      const url = document.getElementById('link-url').value;
+      if(!name || !url) return;
+      appData.links.push({ id: Date.now().toString(), name, url });
+      document.getElementById('link-name').value = ''; document.getElementById('link-url').value = '';
+      saveData(); renderLinks();
+    }
+    function deleteLink(id) {
+      appData.links = appData.links.filter(x => x.id !== id);
+      saveData(); renderLinks();
+    }
+
+    // 初期化
+    window.onload = () => {
+      document.getElementById('fin-date').value = new Date().toISOString().split('T')[0];
+      renderTodos();
+      initEqTabs();
+      renderShopping();
+      renderFinance();
+      renderLinks();
+    };
   </script>
 </body>
 </html>
