@@ -21,15 +21,32 @@
     const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Imd2cmV5Y3p3eXp5cnZub3NrcGtiIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODQ4MjMzODQsImV4cCI6MjEwMDM5OTM4NH0.DbG_309jHLfF03VNCyKDsxw3aP9omBB8y4-udlk-GF0';
     const supabaseClient = supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
 
+    // ★★★ GASウェブアプリのURL（LINE通知用）★★★
+    const GAS_URL = 'https://script.google.com/macros/s/AKfycbzfI4EGsgAGT3Ava3qo1SXW_A1MCRvsvwkM20ClOmiiOU87JCDYYuQ7_KX2AR-5yv5mDA/exec';
+
     function App() {
       const [session, setSession] = useState(null);
-      const [activeTab, setActiveTab] = useState('shopping'); // デフォルトを買い物タブに
+      const [activeTab, setActiveTab] = useState('shopping');
 
       useEffect(() => {
         supabaseClient.auth.getSession().then(({ data: { session } }) => setSession(session));
         const { data: { subscription } } = supabaseClient.auth.onAuthStateChange((_event, session) => setSession(session));
         return () => subscription.unsubscribe();
       }, []);
+
+      // LINE通知を送る共通関数
+      const sendLineNotification = async (message) => {
+        if (!GAS_URL || GAS_URL === 'ここにGASのウェブアプリのURLを貼り付ける') return;
+        try {
+          await fetch(GAS_URL, {
+            method: 'POST',
+            headers: { 'Content-Type': 'text/plain' },
+            body: JSON.stringify({ message })
+          });
+        } catch (e) {
+          console.error('LINE通知エラー:', e);
+        }
+      };
 
       if (!session) return <AuthScreen />;
 
@@ -59,10 +76,10 @@
           </nav>
 
           <main className="p-4 max-w-4xl mx-auto mt-4 pb-20">
-            {activeTab === 'todo' && <TodoApp user={session.user} />}
-            {activeTab === 'shopping' && <ShoppingApp user={session.user} />}
-            {activeTab === 'finance' && <FinanceApp user={session.user} />}
-            {activeTab === 'inventory' && <InventoryApp user={session.user} />}
+            {activeTab === 'todo' && <TodoApp user={session.user} notify={sendLineNotification} />}
+            {activeTab === 'shopping' && <ShoppingApp user={session.user} notify={sendLineNotification} />}
+            {activeTab === 'finance' && <FinanceApp user={session.user} notify={sendLineNotification} />}
+            {activeTab === 'inventory' && <InventoryApp user={session.user} notify={sendLineNotification} />}
             {activeTab === 'report' && <ReportApp />}
             {activeTab === 'portal' && <PortalApp user={session.user} />}
           </main>
@@ -107,7 +124,7 @@
     }
 
     // --- 📝 ToDoアプリ ---
-    function TodoApp({ user }) {
+    function TodoApp({ user, notify }) {
       const [todos, setTodos] = useState([]);
       const [title, setTitle] = useState('');
       const [deadline, setDeadline] = useState('');
@@ -128,6 +145,7 @@
         setTodos([newTodo, ...todos]);
         setTitle(''); setDeadline(''); setMemo('');
         await supabaseClient.from('todos').insert([newTodo]);
+        notify(`📝 新しいタスクが追加されました:\n${title}`);
       };
 
       const toggleComplete = async (todo) => {
@@ -199,8 +217,8 @@
       );
     }
 
-    // --- 🛒 買い物リストアプリ (金額・数量入力追加 ＆ エラー表示改善) ---
-    function ShoppingApp({ user }) {
+    // --- 🛒 買い物リストアプリ ---
+    function ShoppingApp({ user, notify }) {
       const [items, setItems] = useState([]);
       const [name, setName] = useState('');
       const [addPrice, setAddPrice] = useState('');
@@ -217,27 +235,11 @@
 
       const addItem = async () => {
         if (!name) return alert('買いたいものを入力してください');
-        
-        const newItem = { 
-          user_id: user.id, 
-          item_name: name, 
-          price: Number(addPrice) || 0, 
-          quantity: Number(addQuantity) || 1, 
-          in_basket: false 
-        };
-        
-        const { data, error } = await supabaseClient.from('shopping_list').insert([newItem]).select();
-        
-        if (error) {
-          alert('追加に失敗しました。詳細: ' + error.message);
-          return;
-        }
-
+        const newItem = { user_id: user.id, item_name: name, price: Number(addPrice) || 0, quantity: Number(addQuantity) || 1, in_basket: false };
+        const { data } = await supabaseClient.from('shopping_list').insert([newItem]).select();
         if (data) {
           setItems([data[0], ...items]);
-          setName('');
-          setAddPrice('');
-          setAddQuantity(1);
+          setName(''); setAddPrice(''); setAddQuantity(1);
         }
       };
 
@@ -258,12 +260,8 @@
         if (totalAmount === 0) return alert('カゴが空です');
         setIsCheckingOut(true);
         
-        // 1. 家計簿に追加
         const { error: insertError } = await supabaseClient.from('account_book').insert([{
-          user_id: user.id,
-          item_name: '買い物（まとめ）',
-          amount: totalAmount,
-          payment_method: paymentMethod
+          user_id: user.id, item_name: '買い物（まとめ）', amount: totalAmount, payment_method: paymentMethod
         }]);
 
         if (insertError) {
@@ -272,26 +270,22 @@
           return;
         }
 
-        // 2. カゴの中身を削除
         const basketItemIds = items.filter(i => i.in_basket).map(i => i.id);
         await supabaseClient.from('shopping_list').delete().in('id', basketItemIds);
         
-        // 3. 画面の更新
         setItems(items.filter(i => !i.in_basket));
         setIsCheckingOut(false);
         alert('お会計完了！家計簿に追加されました。');
+        notify(`🛒 お買い物完了！\n計 ¥${totalAmount.toLocaleString()} を家計簿に記録しました。`);
       };
 
       return (
         <div className="space-y-6">
           <h2 className="text-xl font-bold border-b-2 border-black pb-2">🛒 スマート買い物リスト</h2>
-          
           <div className="bg-gray-900 text-green-400 p-6 border-4 border-black text-right shadow-inner">
             <p className="text-sm font-bold text-gray-400 mb-1 tracking-widest">TOTAL AMOUNT</p>
             <p className="font-mono text-5xl font-bold">¥ {totalAmount.toLocaleString()}</p>
           </div>
-
-          {/* 追加フォーム（金額・数量を追加） */}
           <div className="flex flex-col md:flex-row gap-2 bg-gray-50 p-4 border-2 border-black">
             <input type="text" placeholder="買いたいもの" value={name} onChange={(e) => setName(e.target.value)} className="border-2 border-black p-2 flex-1 font-bold" />
             <div className="flex gap-2">
@@ -300,7 +294,6 @@
               <button onClick={addItem} className="bg-black text-white px-6 py-2 font-bold hover:bg-gray-800">リスト追加</button>
             </div>
           </div>
-
           <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
             <div className="border-2 border-black bg-white p-4 shadow-[4px_4px_0_0_rgba(0,0,0,1)]">
               <h3 className="font-bold text-lg mb-3 border-b-2 border-black pb-1">📋 買うものリスト</h3>
@@ -320,7 +313,6 @@
                 </div>
               ))}
             </div>
-
             <div className="border-2 border-black bg-gray-50 p-4 shadow-[4px_4px_0_0_rgba(0,0,0,1)]">
               <h3 className="font-bold text-lg mb-3 border-b-2 border-black pb-1">🧺 カゴの中</h3>
               {items.filter(i => i.in_basket).map(item => (
@@ -335,20 +327,13 @@
                   </div>
                 </div>
               ))}
-
               {items.filter(i => i.in_basket).length > 0 && (
                 <div className="mt-6 border-t-2 border-black pt-4">
                   <label className="block text-sm font-bold mb-2">支払方法を選んで完了</label>
                   <select value={paymentMethod} onChange={(e) => setPaymentMethod(e.target.value)} className="w-full border-2 border-black p-2 mb-4 font-bold bg-white">
                     <option>現金</option><option>クレジットカード</option><option>PayPay</option>
                   </select>
-                  <button 
-                    onClick={checkout} 
-                    disabled={isCheckingOut}
-                    className="w-full bg-blue-600 hover:bg-blue-700 text-white font-bold py-4 text-xl border-2 border-black shadow-[4px_4px_0_0_rgba(0,0,0,1)] transition-transform active:translate-y-1 active:shadow-none"
-                  >
-                    買い物完了＆家計簿へ記録
-                  </button>
+                  <button onClick={checkout} disabled={isCheckingOut} className="w-full bg-blue-600 hover:bg-blue-700 text-white font-bold py-4 text-xl border-2 border-black shadow-[4px_4px_0_0_rgba(0,0,0,1)] active:translate-y-1 active:shadow-none">買い物完了＆家計簿へ記録</button>
                 </div>
               )}
             </div>
@@ -357,10 +342,9 @@
       );
     }
 
-    // --- 💴 家計簿＆サブスク管理アプリ (エラー表示改善) ---
-    function FinanceApp({ user }) {
+    // --- 💴 家計簿＆サブスク管理アプリ ---
+    function FinanceApp({ user, notify }) {
       const [view, setView] = useState('account');
-      
       const [records, setRecords] = useState([]);
       const [itemName, setItemName] = useState('');
       const [amount, setAmount] = useState('');
@@ -382,21 +366,10 @@
       };
 
       const addRecord = async () => {
-        if (!itemName || !amount) return alert('摘要（買ったもの）と金額を入力してください！');
-        
+        if (!itemName || !amount) return alert('摘要と金額を入力してください！');
         const newRec = { user_id: user.id, item_name: itemName, amount: Number(amount), payment_method: payment };
-        const { data, error } = await supabaseClient.from('account_book').insert([newRec]).select();
-        
-        if (error) {
-          alert('追加エラー: ' + error.message);
-          return;
-        }
-        
-        if (data) { 
-          setRecords([data[0], ...records]); 
-          setItemName(''); 
-          setAmount(''); 
-        }
+        const { data } = await supabaseClient.from('account_book').insert([newRec]).select();
+        if (data) { setRecords([data[0], ...records]); setItemName(''); setAmount(''); }
       };
 
       const saveEditRecord = async () => {
@@ -418,19 +391,11 @@
 
       const addSub = async () => {
         if (!subName || !subPrice) return alert('サービス名と月額を入力してください！');
-        
         const newSub = { user_id: user.id, name: subName, price: Number(subPrice) };
-        const { data, error } = await supabaseClient.from('subscriptions').insert([newSub]).select();
-        
-        if (error) {
-          alert('追加エラー: ' + error.message);
-          return;
-        }
-        
+        const { data } = await supabaseClient.from('subscriptions').insert([newSub]).select();
         if (data) { 
-          setSubs([data[0], ...subs]); 
-          setSubName(''); 
-          setSubPrice(''); 
+          setSubs([data[0], ...subs]); setSubName(''); setSubPrice(''); 
+          notify(`🔄 新しいサブスクが登録されました:\n${subName} (月額 ¥${Number(subPrice).toLocaleString()})`);
         }
       };
 
@@ -445,7 +410,6 @@
             <button onClick={() => setView('account')} className={`px-6 py-3 font-bold border-2 border-b-0 border-black rounded-t-lg mr-2 ${view === 'account' ? 'bg-[#f4ebd0]' : 'bg-gray-100 hover:bg-gray-200'}`}>🏦 通帳風・家計簿</button>
             <button onClick={() => setView('sub')} className={`px-6 py-3 font-bold border-2 border-b-0 border-black rounded-t-lg ${view === 'sub' ? 'bg-black text-white' : 'bg-gray-100 hover:bg-gray-200'}`}>🔄 サブスク管理</button>
           </div>
-
           {view === 'account' && (
             <div className="space-y-4">
               <div className="flex flex-wrap gap-2 bg-white p-4 border-2 border-black shadow-[4px_4px_0_0_rgba(0,0,0,1)]">
@@ -456,35 +420,27 @@
                 </select>
                 <button onClick={addRecord} className="bg-black text-white font-bold px-6 py-2 border-2 border-black hover:bg-gray-800">記帳する</button>
               </div>
-
               <div className="bg-[#f4ebd0] border-4 border-gray-800 p-4 font-serif shadow-lg rounded-sm overflow-x-auto">
                 <h3 className="text-center font-bold tracking-[0.5em] mb-4 text-gray-800 border-b border-gray-800 pb-2">普通預金通帳（支出）</h3>
                 <table className="w-full border-collapse border-2 border-gray-800 min-w-[500px]">
                   <thead>
                     <tr className="bg-[#e8dec0] border-b-2 border-gray-800 text-gray-800">
-                      <th className="border-r-2 border-gray-800 p-2 text-left w-1/2">摘要（買ったもの）</th>
-                      <th className="border-r-2 border-gray-800 p-2 text-right">お引出し（金額）</th>
-                      <th className="p-2 text-center w-32">お取扱</th>
+                      <th className="border-r-2 border-gray-800 p-2 text-left w-1/2">摘要（買ったもの）</th><th className="border-r-2 border-gray-800 p-2 text-right">お引出し（金額）</th><th className="p-2 text-center w-32">お取扱</th>
                     </tr>
                   </thead>
                   <tbody>
-                    {records.map((rec, i) => (
+                    {records.map((rec) => (
                       <tr key={rec.id} className="border-b border-gray-400 hover:bg-[#e8dec0] cursor-pointer" onClick={() => setEditRecord(rec)}>
                         <td className="border-r-2 border-gray-800 p-2 font-bold text-gray-800">{rec.item_name}</td>
                         <td className="border-r-2 border-gray-800 p-2 text-right font-bold text-red-700 font-mono tracking-wider">{rec.amount.toLocaleString()}</td>
                         <td className="p-2 text-center text-sm font-bold text-gray-700">{rec.payment_method}</td>
                       </tr>
                     ))}
-                    {[...Array(Math.max(0, 5 - records.length))].map((_, i) => (
-                      <tr key={'empty'+i} className="border-b border-gray-400 h-10"><td className="border-r-2 border-gray-800"></td><td className="border-r-2 border-gray-800"></td><td></td></tr>
-                    ))}
                   </tbody>
                 </table>
-                <p className="text-right text-xs mt-2 text-gray-500">※行をクリックで編集・削除</p>
               </div>
             </div>
           )}
-
           {view === 'sub' && (
             <div className="space-y-4">
               <div className="bg-black text-white p-6 border-4 border-black text-center shadow-[4px_4px_0_0_rgba(156,163,175,1)]">
@@ -492,7 +448,7 @@
                 <p className="font-mono text-4xl font-bold mt-2">¥ {subs.reduce((sum, s) => sum + s.price, 0).toLocaleString()}<span className="text-lg"> /月</span></p>
               </div>
               <div className="flex flex-col md:flex-row gap-2">
-                <input type="text" placeholder="サービス名 (例: Netflix)" value={subName} onChange={e => setSubName(e.target.value)} className="border-2 border-black p-3 flex-1 font-bold" />
+                <input type="text" placeholder="サービス名" value={subName} onChange={e => setSubName(e.target.value)} className="border-2 border-black p-3 flex-1 font-bold" />
                 <div className="flex gap-2">
                   <input type="number" placeholder="月額(円)" value={subPrice} onChange={e => setSubPrice(e.target.value)} className="border-2 border-black p-3 w-32 font-bold text-right" />
                   <button onClick={addSub} className="bg-black text-white font-bold px-6 border-2 border-black hover:bg-gray-800">登録</button>
@@ -511,7 +467,6 @@
               </div>
             </div>
           )}
-
           {editRecord && (
             <div className="fixed inset-0 bg-black bg-opacity-60 flex items-center justify-center p-4 z-50">
               <div className="bg-[#f4ebd0] border-4 border-gray-800 p-6 w-full max-w-sm space-y-4 font-serif">
@@ -537,67 +492,37 @@
       );
     }
 
-    // --- 📑 レポート支援ツール (復活＆アップグレード版) ---
+    // --- 📑 レポート支援ツール ---
     function ReportApp() {
-      // ブラウザに自動保存されるように localStorage を使用
       const [title, setTitle] = useState(() => localStorage.getItem('draft_report_title') || '');
       const [text, setText] = useState(() => localStorage.getItem('draft_report_text') || '');
 
-      const handleTitleChange = (e) => {
-        setTitle(e.target.value);
-        localStorage.setItem('draft_report_title', e.target.value);
-      };
-
-      const handleTextChange = (e) => {
-        setText(e.target.value);
-        localStorage.setItem('draft_report_text', e.target.value);
-      };
-
+      const handleTitleChange = (e) => { setTitle(e.target.value); localStorage.setItem('draft_report_title', e.target.value); };
+      const handleTextChange = (e) => { setText(e.target.value); localStorage.setItem('draft_report_text', e.target.value); };
       const copyText = () => {
         if (!text) return alert('コピーするテキストがありません');
-        const copyContent = title ? `【${title}】\n${text}` : text;
-        navigator.clipboard.writeText(copyContent);
+        navigator.clipboard.writeText(title ? `【${title}】\n${text}` : text);
         alert('クリップボードにコピーしました！');
       };
-
       const clearText = () => {
-        if (confirm('入力内容をすべて消去しますか？（元に戻せません）')) {
-          setTitle('');
-          setText('');
-          localStorage.removeItem('draft_report_title');
-          localStorage.removeItem('draft_report_text');
+        if (confirm('入力内容をすべて消去しますか？')) {
+          setTitle(''); setText(''); localStorage.removeItem('draft_report_title'); localStorage.removeItem('draft_report_text');
         }
       };
 
       return (
         <div className="space-y-4">
-          <h2 className="text-xl font-bold border-b-2 border-black pb-2">📑 レポート・メモ作成アシスタント</h2>
-          <p className="text-sm text-gray-600">※入力した内容はブラウザに自動保存されます。</p>
-          
+          <h2 className="text-xl font-bold border-b-2 border-black pb-2">📑 レポート・メモ作成</h2>
           <div className="flex flex-col md:flex-row gap-2">
-            <input 
-              type="text" 
-              placeholder="タイトル・件名" 
-              value={title} 
-              onChange={handleTitleChange} 
-              className="border-2 border-black p-3 flex-1 font-bold" 
-            />
+            <input type="text" placeholder="タイトル・件名" value={title} onChange={handleTitleChange} className="border-2 border-black p-3 flex-1 font-bold" />
             <div className="flex gap-2">
               <button onClick={copyText} className="bg-blue-600 hover:bg-blue-700 text-white px-6 py-2 font-bold border-2 border-black">コピー</button>
               <button onClick={clearText} className="bg-white hover:bg-gray-200 text-red-600 border-2 border-red-600 px-4 py-2 font-bold">クリア</button>
             </div>
           </div>
-          
           <div className="relative">
-            <textarea 
-              value={text} 
-              onChange={handleTextChange} 
-              placeholder="ここに本文を入力..."
-              className="w-full border-2 border-black p-4 h-96 focus:outline-none focus:ring-2 ring-black font-serif leading-relaxed"
-            />
-            <div className="absolute bottom-4 right-4 bg-black text-white px-3 py-1 text-sm font-bold opacity-80 pointer-events-none">
-              {text.length} 文字
-            </div>
+            <textarea value={text} onChange={handleTextChange} placeholder="本文..." className="w-full border-2 border-black p-4 h-96 focus:outline-none focus:ring-2 ring-black font-serif leading-relaxed" />
+            <div className="absolute bottom-4 right-4 bg-black text-white px-3 py-1 text-sm font-bold opacity-80 pointer-events-none">{text.length} 文字</div>
           </div>
         </div>
       );
@@ -608,9 +533,7 @@
       const [links, setLinks] = useState([]);
       const [name, setName] = useState('');
       const [url, setUrl] = useState('');
-      
-      const dragItem = useRef();
-      const dragOverItem = useRef();
+      const dragItem = useRef(); const dragOverItem = useRef();
 
       useEffect(() => { fetchLinks(); }, []);
 
@@ -621,12 +544,8 @@
 
       const addLink = async () => {
         if (!name || !url) return alert('サイト名とURLの両方を入力してください');
-        const newOrder = links.length;
-        const newLink = { user_id: user.id, name, url, sort_order: newOrder };
-        const { data, error } = await supabaseClient.from('portal_links').insert([newLink]).select();
-        
-        if (error) return alert('エラー: ' + error.message);
-
+        const newLink = { user_id: user.id, name, url, sort_order: links.length };
+        const { data } = await supabaseClient.from('portal_links').insert([newLink]).select();
         if (data) { setLinks([...links, data[0]]); setName(''); setUrl(''); }
       };
 
@@ -635,46 +554,29 @@
         await supabaseClient.from('portal_links').delete().eq('id', id);
       };
 
-      const handleDragStart = (e, position) => { dragItem.current = position; };
-      const handleDragEnter = (e, position) => { dragOverItem.current = position; };
       const handleDrop = async () => {
         const copyLinks = [...links];
         const draggedContent = copyLinks.splice(dragItem.current, 1)[0];
         copyLinks.splice(dragOverItem.current, 0, draggedContent);
         dragItem.current = null; dragOverItem.current = null;
-        
         setLinks(copyLinks);
-        
-        const updates = copyLinks.map((link, index) => ({ id: link.id, sort_order: index }));
-        for (const update of updates) {
-          await supabaseClient.from('portal_links').update({ sort_order: update.sort_order }).eq('id', update.id);
+        for (let i = 0; i < copyLinks.length; i++) {
+          await supabaseClient.from('portal_links').update({ sort_order: i }).eq('id', copyLinks[i].id);
         }
       };
 
       return (
         <div className="space-y-6">
-          <h2 className="text-xl font-bold border-b-2 border-black pb-2">ポータル・リンク集 <span className="text-sm font-normal text-gray-500">※ドラッグで並び替え</span></h2>
+          <h2 className="text-xl font-bold border-b-2 border-black pb-2">ポータル・リンク集</h2>
           <div className="flex flex-col sm:flex-row gap-2 mb-6">
             <input type="text" placeholder="サイト名" value={name} onChange={(e) => setName(e.target.value)} className="border-2 border-black p-2 flex-1" />
             <input type="url" placeholder="URL" value={url} onChange={(e) => setUrl(e.target.value)} className="border-2 border-black p-2 flex-1" />
             <button onClick={addLink} className="bg-black text-white px-6 py-2 font-bold hover:bg-gray-800">追加</button>
           </div>
-          
           <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-4">
             {links.map((link, index) => (
-              <div 
-                key={link.id} 
-                draggable
-                onDragStart={(e) => handleDragStart(e, index)}
-                onDragEnter={(e) => handleDragEnter(e, index)}
-                onDragEnd={handleDrop}
-                onDragOver={(e) => e.preventDefault()}
-                className="border-2 border-black flex justify-between items-stretch bg-white cursor-move hover:shadow-[4px_4px_0_0_rgba(0,0,0,1)] transition-shadow"
-              >
-                <div className="flex-1 p-4 flex items-center gap-2 overflow-hidden">
-                  <span className="text-gray-400">⣿</span>
-                  <a href={link.url} target="_blank" rel="noopener noreferrer" className="font-bold hover:underline truncate">{link.name}</a>
-                </div>
+              <div key={link.id} draggable onDragStart={(e) => dragItem.current = index} onDragEnter={(e) => dragOverItem.current = index} onDragEnd={handleDrop} onDragOver={(e) => e.preventDefault()} className="border-2 border-black flex justify-between items-stretch bg-white cursor-move hover:shadow-[4px_4px_0_0_rgba(0,0,0,1)] transition-shadow">
+                <div className="flex-1 p-4 flex items-center gap-2 overflow-hidden"><span className="text-gray-400">⣿</span><a href={link.url} target="_blank" rel="noopener noreferrer" className="font-bold hover:underline truncate">{link.name}</a></div>
                 <button onClick={() => deleteLink(link.id)} className="px-4 border-l-2 border-black font-bold hover:bg-black hover:text-white flex items-center justify-center">✕</button>
               </div>
             ))}
@@ -684,7 +586,7 @@
     }
 
     // --- 📦 備品アプリ ---
-    function InventoryApp({ user }) {
+    function InventoryApp({ user, notify }) {
       const categories = ['リビング', 'トイレ', '洗面所', 'キッチン', '風呂'];
       const [activeCat, setActiveCat] = useState(categories[0]);
       const [items, setItems] = useState([]);
@@ -712,6 +614,10 @@
         const updated = items.map(i => i.id === item.id ? { ...i, stock: newStock, last_date: delta > 0 ? today : i.last_date } : i);
         setItems(updated);
         await supabaseClient.from('inventory').update({ stock: newStock, last_date: delta > 0 ? today : item.last_date }).eq('id', item.id);
+
+        if (newStock === 0 && item.stock > 0) {
+          notify(`⚠️ ストック切れ:\n${item.name} (${item.category}) を買い足してください！`);
+        }
       };
 
       const deleteItem = async (id) => {
