@@ -78,9 +78,10 @@
     .delete-btn { background: transparent; color: var(--text-light); border: 1px solid var(--border); padding: 6px 12px; cursor: pointer; border-radius: 4px; font-size: 12px; transition: 0.2s; }
     .delete-btn:hover { background: var(--danger); color: white; border-color: var(--danger); }
     
-    /* ToDo専用 */
-    .priority-high { border-left: 4px solid var(--danger); }
-    .priority-mid { border-left: 4px solid var(--gold); }
+    /* ToDo専用（優先度別ライン） */
+    .priority-high { border-left: 5px solid var(--danger); }
+    .priority-mid { border-left: 5px solid var(--gold); }
+    .priority-low { border-left: 5px solid #9ca3af; }
     .todo-sub-header { font-size: 16px; color: var(--primary); margin: 25px 0 15px; font-weight: bold; }
     
     /* サブタブ */
@@ -115,7 +116,7 @@
     .link-item a { color: var(--primary); text-decoration: none; font-weight: bold; display: flex; align-items: center; gap: 10px; width: 100%; }
     .link-item a:hover { color: var(--gold); }
     
-    /* ★ レポート・誤字チェッカー（大きく変更） */
+    /* レポート・誤字チェッカー */
     .typo-warning { 
       color: var(--danger); font-size: 15px; margin-top: 15px; background: #fef2f2; 
       padding: 15px 20px; border-radius: 8px; border: 2px solid #fca5a5; 
@@ -156,14 +157,14 @@
   <div id="todo" class="content active">
     <div class="section-title">
       Smart ToDo
-      <span style="font-size:12px; color:#6b7280;">※ 期限の7日前, 3日前, 1日前に自動通知</span>
+      <span style="font-size:12px; color:#6b7280;">※ 期日順自動ソート＆優先度表示（高：1週間以内 / 中：2週間以内 / 小：2週間以降）</span>
     </div>
     <div class="input-group">
       <input type="text" id="todo-input" placeholder="タスク名" style="flex-grow: 2;">
       <input type="datetime-local" id="todo-date">
       <button class="action-btn gold-btn" onclick="addTodo()">追加</button>
     </div>
-    <div class="todo-sub-header">📌 未完了のタスク</div>
+    <div class="todo-sub-header">📌 未完了のタスク（期日順）</div>
     <ul id="todo-list-active"></ul>
     <div class="todo-sub-header" style="color: #9ca3af; border-top: 1px dashed #e5e7eb; padding-top: 20px;">✅ 完了済みのタスク</div>
     <ul id="todo-list-done"></ul>
@@ -176,7 +177,6 @@
       <button class="action-btn" style="font-size: 12px; padding: 8px 15px;" onclick="sendAllEqToLine()">📱 全エリアの備品をLINEに送信</button>
     </div>
     
-    <!-- ★ エリアのカスタマイズ機能追加 -->
     <div class="sub-tabs" id="eq-tabs"></div>
     <div style="margin-bottom: 25px; display: flex; gap: 10px;">
       <button class="sub-tab-btn" style="border-style: dashed;" onclick="addEqArea()">＋ エリアを追加</button>
@@ -202,17 +202,14 @@
     </div>
     
     <div class="shop-area">
-      <!-- 買うものリスト -->
       <div class="shop-box">
         <h3>📋 買うものリスト</h3>
         <ul id="shop-list-pending" style="min-height: 100px;"></ul>
       </div>
-      <!-- カゴの中身 -->
       <div class="shop-box" style="background: #fdfaf3; border-color: #f6e8c3;">
         <h3>🛒 カゴの中身</h3>
         <ul id="shop-list-cart" style="min-height: 100px;"></ul>
         
-        <!-- 会計エリア -->
         <div id="checkout-area" style="display: none; margin-top: 20px; padding-top: 20px; border-top: 2px dashed #d1d5db; text-align: center;">
           <div style="font-size: 20px; font-weight: bold; color: var(--primary); margin-bottom: 15px;">
             TOTAL <span id="shop-total" style="color: var(--gold); font-size: 28px;">¥ 0</span>
@@ -294,10 +291,8 @@
         <strong style="color: var(--primary); font-size: 18px;">下書きメモ ＆ 誤字チェック</strong>
         <span style="font-size: 16px; color: var(--text-light); font-weight: bold;"><span id="char-count" style="font-size: 24px; color: var(--primary);">0</span> 文字</span>
       </div>
-      <!-- ★ テキストエリアを縦横に大きくし、見やすく変更 -->
       <textarea id="report-memo" rows="15" oninput="checkTypos(this)" placeholder="ここに構成や文章を入力..." style="width: 100%; box-sizing: border-box; min-height: 400px; font-size: 16px; padding: 20px; line-height: 1.8; border-radius: 8px;"></textarea>
       
-      <!-- ★ 誤字チェッカーの枠を太く・大きく変更 -->
       <div id="typo-alert" class="typo-warning"></div>
     </div>
     
@@ -394,7 +389,7 @@
     }
 
     // ==========================================
-    // 1. ToDo (リマインド通知機能)
+    // 1. ToDo (期日順ソート ＆ 優先度表示: 高・中・小)
     // ==========================================
     function checkTodoReminders() {
       const now = new Date();
@@ -430,12 +425,32 @@
       activeList.innerHTML = ''; doneList.innerHTML = '';
       const now = new Date();
 
-      appData.todos.forEach(todo => {
+      // ★ 期日順にソート（日時が近いものが上、日時未設定は一番下）
+      const sortedTodos = [...appData.todos].sort((a, b) => {
+        if (!a.date && !b.date) return 0;
+        if (!a.date) return 1;
+        if (!b.date) return -1;
+        return new Date(a.date) - new Date(b.date);
+      });
+
+      sortedTodos.forEach(todo => {
         let cls = '';
+        let priorityBadge = '';
+
         if (todo.date && !todo.done) {
           const diffDays = (new Date(todo.date) - now) / (1000 * 60 * 60 * 24);
-          if (diffDays <= 1) cls = 'priority-high';
-          else if (diffDays <= 3) cls = 'priority-mid';
+          
+          // ★ 優先度の判定（高：一週間以内、中：二週間以内、小：二週間以降）
+          if (diffDays <= 7) {
+            cls = 'priority-high';
+            priorityBadge = '<span style="background:var(--danger); color:white; padding:2px 8px; border-radius:4px; font-size:11px; font-weight:bold;">高</span>';
+          } else if (diffDays <= 14) {
+            cls = 'priority-mid';
+            priorityBadge = '<span style="background:var(--gold); color:white; padding:2px 8px; border-radius:4px; font-size:11px; font-weight:bold;">中</span>';
+          } else {
+            cls = 'priority-low';
+            priorityBadge = '<span style="background:#9ca3af; color:white; padding:2px 8px; border-radius:4px; font-size:11px; font-weight:bold;">小</span>';
+          }
         }
 
         const dateStr = todo.date ? todo.date.replace('T', ' ') : '';
@@ -443,6 +458,7 @@
           <li class="${todo.done ? '' : cls}" style="${todo.done ? 'opacity:0.6; background:#f9fafb;' : ''}">
             <div style="display:flex; align-items:center; gap:10px; flex-grow:1; cursor:pointer;" onclick="toggleTodo('${todo.id}')">
               <input type="checkbox" ${todo.done ? 'checked' : ''} style="transform: scale(1.2);">
+              ${todo.done ? '' : priorityBadge}
               <span style="${todo.done ? 'text-decoration:line-through; color:#9ca3af;' : 'font-weight:bold;'}">${todo.text}</span>
               ${dateStr ? `<span style="font-size:12px; color:#6b7280;">⏳ ${dateStr}</span>` : ''}
             </div>
@@ -453,12 +469,14 @@
       });
       checkTodoReminders();
     }
+
     function addTodo() {
       const text = document.getElementById('todo-input').value;
       const date = document.getElementById('todo-date').value;
       if (!text) return;
       appData.todos.push({ id: Date.now().toString(), text, date, done: false });
       document.getElementById('todo-input').value = '';
+      document.getElementById('todo-date').value = '';
       saveData(); renderTodos();
     }
     function toggleTodo(id) { const t = appData.todos.find(x => x.id === id); if(t){ t.done = !t.done; saveData(); renderTodos(); } }
@@ -467,10 +485,8 @@
     // ==========================================
     // 2. 備品管理 (エリアカスタマイズ対応)
     // ==========================================
-    // 最初にデータにある一番最初のエリアを選択
     let currentArea = Object.keys(appData.equipments)[0] || '未分類';
     
-    // ★ エリアを追加する関数
     function addEqArea() {
       const areaName = prompt('新しいエリア名（項目名）を入力してください:');
       if (areaName && areaName.trim() !== '') {
@@ -486,7 +502,6 @@
       }
     }
     
-    // ★ エリアを削除する関数
     function deleteEqArea() {
       if (Object.keys(appData.equipments).length <= 1) {
         alert('最低1つのエリアは残しておく必要があります。');
@@ -502,7 +517,6 @@
     }
 
     function initEqTabs() {
-      // 万が一エリアがゼロなら初期化
       if (Object.keys(appData.equipments).length === 0) {
         appData.equipments['未分類'] = [];
         currentArea = '未分類';
@@ -562,7 +576,7 @@
     }
 
     // ==========================================
-    // 3. 買い物リスト (個数・カゴ分離)
+    // 3. 買い物リスト
     // ==========================================
     function renderShopping() {
       const pendingList = document.getElementById('shop-list-pending');
@@ -634,7 +648,7 @@
     }
 
     // ==========================================
-    // 4. 家計簿 (ダッシュボード・月末通知)
+    // 4. 家計簿
     // ==========================================
     function checkMonthlyFinanceReport() {
       const now = new Date();
@@ -714,7 +728,7 @@
     function deleteFinance(id) { appData.finance = appData.finance.filter(x => x.id !== id); saveData(); renderFinance(); }
 
     // ==========================================
-    // 5. レポート (誤字チェッカー)
+    // 5. レポート
     // ==========================================
     function checkTypos(textarea) {
       document.getElementById('char-count').innerText = textarea.value.length;
