@@ -24,7 +24,7 @@
     
     /* フォーム要素 */
     .input-group { display: flex; gap: 10px; margin-bottom: 20px; flex-wrap: wrap; align-items: center; }
-    input[type="text"], input[type="number"], input[type="date"], select { padding: 10px; border: 1px solid #bdc3c7; border-radius: 6px; flex-grow: 1; outline: none; }
+    input[type="text"], input[type="number"], input[type="date"], input[type="datetime-local"], select { padding: 10px; border: 1px solid #bdc3c7; border-radius: 6px; flex-grow: 1; outline: none; }
     button.action-btn { padding: 10px 20px; background: #3498db; color: #fff; border: none; border-radius: 6px; cursor: pointer; font-weight: bold; }
     button.action-btn:hover { background: #2980b9; }
     
@@ -50,13 +50,28 @@
     /* リンク集 ドラッグ＆ドロップ */
     .drag-handle { cursor: grab; padding: 0 10px; color: #bdc3c7; font-size: 20px; user-select: none; }
     .drag-over { border: 2px dashed #3498db; }
+
+    /* レジ風表示（買い物） */
+    .register-display {
+      background: #1e272e;
+      color: #0be881;
+      font-family: 'Courier New', Courier, monospace;
+      font-size: 28px;
+      text-align: right;
+      padding: 15px 20px;
+      border-radius: 6px;
+      margin-bottom: 15px;
+      box-shadow: inset 0 2px 5px rgba(0,0,0,0.6);
+      font-weight: bold;
+      letter-spacing: 2px;
+    }
     
     /* 通帳風 家計簿 */
     .passbook-container { background: #fdf6e3; padding: 20px; border-radius: 8px; border: 1px solid #dcdde1; box-shadow: inset 0 0 10px rgba(0,0,0,0.05); font-family: 'Courier New', Courier, monospace; }
     .passbook-table { width: 100%; border-collapse: collapse; background: #fff; }
-    .passbook-table th { border: 1px solid #7f8c8d; background: #ecf0f1; padding: 8px; text-align: center; color: #2c3e50; }
-    .passbook-table td { border: 1px solid #bdc3c7; padding: 8px; text-align: right; cursor: pointer; }
-    .passbook-table td:nth-child(2) { text-align: left; }
+    .passbook-table th { border: 1px solid #7f8c8d; background: #ecf0f1; padding: 8px; text-align: center; color: #2c3e50; font-size: 14px; }
+    .passbook-table td { border: 1px solid #bdc3c7; padding: 8px; text-align: right; cursor: pointer; font-size: 14px; }
+    .passbook-table td:nth-child(2), .passbook-table td:nth-child(3) { text-align: left; }
     .passbook-table tr:hover td { background: #f1f2f6; }
     .pb-income { color: #2ecc71; }
     .pb-expense { color: #e74c3c; }
@@ -88,7 +103,7 @@
     <h2 class="section-title">Smart ToDo</h2>
     <div class="input-group">
       <input type="text" id="todo-input" placeholder="タスク名" style="flex-grow: 2;">
-      <input type="date" id="todo-date">
+      <input type="datetime-local" id="todo-date">
       <button class="action-btn" onclick="addTodo()">追加</button>
     </div>
     <ul id="todo-list"></ul>
@@ -118,14 +133,22 @@
     </div>
     <ul id="shop-list" style="margin-bottom: 20px;"></ul>
     
-    <div style="background: #eaf2f8; padding: 15px; border-radius: 8px; text-align: center;">
-      <p style="margin-top: 0; font-weight: bold;">チェックした項目を家計簿に記録</p>
-      <select id="shop-payment" style="margin-bottom: 10px; width: 200px;">
-        <option value="現金">現金</option>
-        <option value="クレジットカード">クレジットカード</option>
-        <option value="PayPay">PayPay</option>
-      </select><br>
-      <button class="action-btn" style="background: #27ae60; width: 100%; font-size: 16px;" onclick="checkoutShopping()">買い物完了 ＆ 家計簿へ記録</button>
+    <div style="background: #eaf2f8; padding: 20px; border-radius: 8px;">
+      <p style="margin-top: 0; font-weight: bold; text-align: center;">チェックした項目を家計簿に記録</p>
+      
+      <!-- レジ風合計表示 -->
+      <div class="register-display">
+        TOTAL <span id="shop-total">¥ 0</span>
+      </div>
+
+      <div style="text-align: center;">
+        <select id="shop-payment" style="margin-bottom: 15px; width: 200px; font-size: 16px;">
+          <option value="現金">現金</option>
+          <option value="クレジットカード">クレジットカード</option>
+          <option value="PayPay">PayPay</option>
+        </select><br>
+        <button class="action-btn" style="background: #27ae60; width: 100%; font-size: 16px; padding: 12px;" onclick="checkoutShopping()">買い物完了 ＆ 家計簿へ記録</button>
+      </div>
     </div>
   </div>
 
@@ -139,7 +162,14 @@
       </select>
       <input type="date" id="fin-date">
       <input type="text" id="fin-name" placeholder="項目名">
-      <input type="number" id="fin-amount" placeholder="金額">
+      <select id="fin-method" style="max-width: 120px;">
+        <option value="-">支払方法(任意)</option>
+        <option value="現金">現金</option>
+        <option value="クレジットカード">クレジットカード</option>
+        <option value="PayPay">PayPay</option>
+        <option value="銀行振込">銀行振込</option>
+      </select>
+      <input type="number" id="fin-amount" placeholder="金額" style="max-width: 120px;">
       <button class="action-btn" onclick="addFinance()">記帳</button>
     </div>
 
@@ -149,10 +179,11 @@
         <thead>
           <tr>
             <th width="15%">日付</th>
-            <th width="35%">摘要</th>
+            <th width="25%">摘要</th>
+            <th width="15%">支払方法</th>
             <th width="15%">お支払金額</th>
             <th width="15%">お預り金額</th>
-            <th width="20%">差引残高</th>
+            <th width="15%">差引残高</th>
           </tr>
         </thead>
         <tbody id="finance-list"></tbody>
@@ -248,23 +279,24 @@
         let cls = '';
         let priorityLabel = '低';
         let isUrgent = false;
+        let displayDateText = '';
 
         if (todo.date) {
           const due = new Date(todo.date);
           const diffHrs = (due - now) / (1000 * 60 * 60);
           
-          if (diffHrs <= 120) { // 5日以内
+          if (diffHrs <= 120) { 
             cls = 'priority-high'; priorityLabel = '最高'; isUrgent = true;
-          } else if (diffHrs <= 168) { // 1週間以内
+          } else if (diffHrs <= 168) { 
             cls = 'priority-mid'; priorityLabel = '中'; isUrgent = true;
           }
           
-          // 1週間以内で未通知ならLINE送信
           if (isUrgent && !todo.notified && !todo.done) {
-            sendLineNotify(`⚠️【期限間近タスク】\n${todo.text}\n期限: ${todo.date}`);
+            sendLineNotify(`⚠️【期限間近タスク】\n${todo.text}\n期限: ${todo.date.replace('T', ' ')}`);
             todo.notified = true;
             saveData();
           }
+          displayDateText = todo.date.replace('T', ' ');
         }
 
         list.innerHTML += `
@@ -272,7 +304,7 @@
             <input type="checkbox" ${todo.done ? 'checked' : ''} onchange="toggleTodo('${todo.id}')" style="margin-right:10px;">
             <div class="todo-item" onclick="openModal('${todo.id}')">
               <span style="${todo.done ? 'text-decoration:line-through;' : ''}">${todo.text}</span>
-              ${todo.date ? `<span style="font-size:12px; color:#7f8c8d; margin-left:10px;">⏳ ${todo.date} [${priorityLabel}]</span>` : ''}
+              ${todo.date ? `<span style="font-size:12px; color:#7f8c8d; margin-left:10px;">⏳ ${displayDateText} [${priorityLabel}]</span>` : ''}
             </div>
             <button class="delete-btn" onclick="deleteTodo('${todo.id}')">削除</button>
           </li>
@@ -286,6 +318,7 @@
       if (!text) return;
       appData.todos.push({ id: Date.now().toString(), text, date, detail: '', done: false, notified: false });
       document.getElementById('todo-input').value = '';
+      document.getElementById('todo-date').value = '';
       saveData(); renderTodos();
     }
     function toggleTodo(id) {
@@ -358,7 +391,6 @@
         eq.count += change;
         if(eq.count <= 0) {
           eq.count = 0;
-          // ストック0で買い物リストへ自動追加
           if(!appData.shopping.find(x => x.name === eq.name && !x.done)) {
             appData.shopping.push({ id: Date.now().toString(), name: eq.name, price: 0, checked: false });
             sendLineNotify(`🛒【買い出しアラート】\n${currentArea}の「${eq.name}」が0になりました！\n買い物リストに追加しました。`);
@@ -375,6 +407,11 @@
     // ==========================================
     // 🛍️ 買い物 ＆ 家計簿連携
     // ==========================================
+    function updateShopTotal() {
+      const total = appData.shopping.filter(x => x.checked).reduce((sum, item) => sum + (item.price || 0), 0);
+      document.getElementById('shop-total').innerText = '¥ ' + total.toLocaleString();
+    }
+
     function renderShopping() {
       const list = document.getElementById('shop-list');
       list.innerHTML = '';
@@ -392,6 +429,7 @@
           </li>
         `;
       });
+      updateShopTotal(); // 描画時に合計金額を更新
     }
 
     function addShop() {
@@ -404,11 +442,11 @@
     }
     function toggleShop(id) {
       let item = appData.shopping.find(x => x.id === id);
-      if(item) { item.checked = !item.checked; saveData(); }
+      if(item) { item.checked = !item.checked; saveData(); updateShopTotal(); }
     }
     function updateShopPrice(id, val) {
       let item = appData.shopping.find(x => x.id === id);
-      if(item) { item.price = parseInt(val) || 0; saveData(); }
+      if(item) { item.price = parseInt(val) || 0; saveData(); updateShopTotal(); }
     }
     function deleteShop(id) {
       appData.shopping = appData.shopping.filter(x => x.id !== id);
@@ -424,10 +462,10 @@
       const method = document.getElementById('shop-payment').value;
       const names = checkedItems.map(x => x.name).join(' / ');
 
-      // 家計簿に追加
+      // 家計簿に追加（決済方法も記録）
       const today = new Date().toISOString().split('T')[0];
       appData.finance.push({
-        id: Date.now().toString(), date: today, type: 'expense', name: `買物: ${names} (${method})`, amount: total
+        id: Date.now().toString(), date: today, type: 'expense', name: `買物: ${names}`, method: method, amount: total
       });
       
       // 買い物リストから削除
@@ -453,11 +491,13 @@
 
         const incomeStr = f.type === 'income' ? `<span class="pb-income">${f.amount.toLocaleString()}</span>` : '';
         const expenseStr = f.type === 'expense' ? `<span class="pb-expense">${f.amount.toLocaleString()}</span>` : '';
+        const methodStr = f.method && f.method !== '-' ? f.method : '';
 
         list.innerHTML += `
           <tr onclick="editFinance('${f.id}')">
             <td>${f.date}</td>
             <td>${f.name}</td>
+            <td>${methodStr}</td>
             <td>${expenseStr}</td>
             <td>${incomeStr}</td>
             <td><strong>${balance.toLocaleString()}</strong></td>
@@ -471,12 +511,15 @@
       const type = document.getElementById('fin-type').value;
       const date = document.getElementById('fin-date').value || new Date().toISOString().split('T')[0];
       const name = document.getElementById('fin-name').value;
+      const method = document.getElementById('fin-method').value;
       const amount = parseInt(document.getElementById('fin-amount').value);
 
       if(!name || !amount) return;
-      appData.finance.push({ id: Date.now().toString(), type, date, name, amount });
+      appData.finance.push({ id: Date.now().toString(), type, date, name, method, amount });
       
-      document.getElementById('fin-name').value = ''; document.getElementById('fin-amount').value = '';
+      document.getElementById('fin-name').value = ''; 
+      document.getElementById('fin-amount').value = '';
+      document.getElementById('fin-method').value = '-';
       saveData(); renderFinance();
     }
 
@@ -527,19 +570,6 @@
         
         list.appendChild(li);
       });
-    }
-
-    function addLink() {
-      const name = document.getElementById('link-name').value;
-      const url = document.getElementById('link-url').value;
-      if(!name || !url) return;
-      appData.links.push({ id: Date.now().toString(), name, url });
-      document.getElementById('link-name').value = ''; document.getElementById('link-url').value = '';
-      saveData(); renderLinks();
-    }
-    function deleteLink(id) {
-      appData.links = appData.links.filter(x => x.id !== id);
-      saveData(); renderLinks();
     }
 
     // 初期化
