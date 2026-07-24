@@ -3,7 +3,13 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>MY PORTAL - Premium</title>
+  <title>MY PORTAL - Firebase Edition</title>
+
+  <!-- 🌟 Firebase SDK (Compat版) -->
+  <script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-app-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-auth-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore-compat.js"></script>
+
   <style>
     /* =======================================
        🎨 プレミアムデザイン ベース設定
@@ -32,21 +38,21 @@
     #login-box {
       background: var(--surface); padding: 40px; border-radius: 12px;
       box-shadow: 0 10px 30px rgba(0,0,0,0.5); text-align: center;
-      width: 90%; max-width: 350px;
+      width: 90%; max-width: 360px;
     }
     #login-box h1 { color: var(--primary); font-size: 24px; margin-bottom: 5px; }
-    #login-box p { color: var(--text-light); font-size: 14px; margin-bottom: 25px; }
+    #login-box p { color: var(--text-light); font-size: 13px; margin-bottom: 20px; }
     #login-box input {
-      width: 100%; padding: 12px; margin-bottom: 20px; box-sizing: border-box;
-      border: 1px solid var(--border); border-radius: 6px; font-size: 16px;
-      text-align: center; letter-spacing: 2px;
+      width: 100%; padding: 12px; margin-bottom: 12px; box-sizing: border-box;
+      border: 1px solid var(--border); border-radius: 6px; font-size: 14px;
     }
-    #login-box button { width: 100%; padding: 12px; font-size: 16px; }
+    .auth-btn-group { display: flex; gap: 10px; margin-top: 10px; }
+    .auth-btn-group button { flex: 1; padding: 12px 5px; font-size: 13px; }
 
     /* ヘッダー */
-    header { background: var(--primary); padding: 20px 40px; display: flex; justify-content: space-between; align-items: center; box-shadow: 0 4px 15px rgba(0,0,0,0.1); }
-    h1 { margin: 0; font-size: 26px; color: var(--gold); letter-spacing: 3px; font-weight: 300; }
-    .user-info { font-size: 13px; color: #9ca3af; margin-top: 5px; }
+    header { background: var(--primary); padding: 15px 40px; display: flex; justify-content: space-between; align-items: center; box-shadow: 0 4px 15px rgba(0,0,0,0.1); }
+    h1 { margin: 0; font-size: 24px; color: var(--gold); letter-spacing: 3px; font-weight: 300; }
+    .user-info { font-size: 12px; color: #9ca3af; margin-top: 3px; }
     
     /* タブ */
     .tabs { display: flex; overflow-x: auto; background: var(--surface); padding: 0 30px; box-shadow: 0 2px 10px rgba(0,0,0,0.03); margin-bottom: 30px; border-bottom: 1px solid var(--border); }
@@ -63,7 +69,7 @@
     
     /* フォーム要素 */
     .input-group { display: flex; gap: 15px; margin-bottom: 25px; flex-wrap: wrap; align-items: center; background: #f9fafb; padding: 20px; border-radius: 8px; border: 1px solid var(--border); }
-    input[type="text"], input[type="number"], input[type="password"], input[type="date"], input[type="datetime-local"], select, textarea { padding: 12px 15px; border: 1px solid var(--border); border-radius: 6px; flex-grow: 1; outline: none; font-size: 15px; transition: border 0.3s; }
+    input[type="text"], input[type="email"], input[type="number"], input[type="password"], input[type="date"], input[type="datetime-local"], select, textarea { padding: 12px 15px; border: 1px solid var(--border); border-radius: 6px; flex-grow: 1; outline: none; font-size: 15px; transition: border 0.3s; }
     input:focus, select:focus, textarea:focus { border-color: var(--gold); box-shadow: 0 0 0 2px rgba(212, 175, 55, 0.2); }
     
     button.action-btn { padding: 12px 25px; background: var(--primary); color: var(--gold); border: 1px solid var(--primary); border-radius: 6px; cursor: pointer; font-weight: bold; font-size: 14px; transition: all 0.3s; letter-spacing: 1px; }
@@ -78,7 +84,7 @@
     .delete-btn { background: transparent; color: var(--text-light); border: 1px solid var(--border); padding: 6px 12px; cursor: pointer; border-radius: 4px; font-size: 12px; transition: 0.2s; }
     .delete-btn:hover { background: var(--danger); color: white; border-color: var(--danger); }
     
-    /* ToDo専用（優先度別ライン） */
+    /* ToDo */
     .priority-high { border-left: 5px solid var(--danger); }
     .priority-mid { border-left: 5px solid var(--gold); }
     .priority-low { border-left: 5px solid #9ca3af; }
@@ -88,15 +94,14 @@
     .sub-tabs { display: flex; gap: 10px; margin-bottom: 15px; flex-wrap: wrap; }
     .sub-tab-btn { padding: 10px 20px; border: 1px solid var(--border); background: #f9fafb; border-radius: 6px; cursor: pointer; font-size: 14px; color: var(--text-light); transition: 0.3s; }
     .sub-tab-btn.active { background: var(--primary); color: var(--gold); border-color: var(--primary); }
-    .sub-tab-btn:hover { border-color: var(--primary); color: var(--primary); }
-
-    /* 買い物リスト専用 */
+    
+    /* 買い物 */
     .shop-area { display: grid; grid-template-columns: 1fr 1fr; gap: 30px; }
     @media(max-width: 768px){ .shop-area { grid-template-columns: 1fr; } }
     .shop-box { background: #f9fafb; padding: 20px; border-radius: 8px; border: 1px solid var(--border); }
     .shop-box h3 { margin-top: 0; font-size: 16px; color: var(--primary); text-align: center; border-bottom: 2px solid var(--border); padding-bottom: 10px; }
     
-    /* 家計簿ダッシュボード */
+    /* 家計簿 */
     .finance-dash { display: flex; gap: 20px; margin-bottom: 25px; }
     .fin-card { flex: 1; background: #fff; padding: 20px; border-radius: 8px; border: 1px solid var(--border); text-align: center; box-shadow: 0 4px 6px rgba(0,0,0,0.02); }
     .fin-card h4 { margin: 0 0 10px 0; color: var(--text-light); font-size: 14px; font-weight: normal; }
@@ -104,45 +109,46 @@
     .amount.income { color: var(--success); }
     .amount.expense { color: var(--danger); }
 
-    /* テーブル */
     .premium-table { width: 100%; border-collapse: collapse; margin-top: 10px; }
     .premium-table th { background: #f9fafb; padding: 12px; font-size: 13px; color: var(--text-light); text-align: center; border-bottom: 2px solid var(--border); }
     .premium-table td { padding: 15px 12px; border-bottom: 1px solid var(--border); font-size: 14px; text-align: right; }
     .premium-table td:nth-child(2), .premium-table td:nth-child(3) { text-align: left; }
-    .premium-table tr:hover { background: #f9fafb; }
     
     /* リンク集 */
     .link-item { padding: 20px; font-size: 16px; }
     .link-item a { color: var(--primary); text-decoration: none; font-weight: bold; display: flex; align-items: center; gap: 10px; width: 100%; }
-    .link-item a:hover { color: var(--gold); }
     
-    /* レポート・誤字チェッカー */
-    .typo-warning { 
-      color: var(--danger); font-size: 15px; margin-top: 15px; background: #fef2f2; 
-      padding: 15px 20px; border-radius: 8px; border: 2px solid #fca5a5; 
-      display: none; line-height: 1.6; font-weight: bold;
-    }
+    .typo-warning { color: var(--danger); font-size: 15px; margin-top: 15px; background: #fef2f2; padding: 15px 20px; border-radius: 8px; border: 2px solid #fca5a5; display: none; line-height: 1.6; font-weight: bold; }
   </style>
 </head>
 <body>
 
-  <!-- 🔐 ログイン画面 -->
+  <!-- 🔐 ログイン / アカウント作成 画面 -->
   <div id="login-screen">
     <div id="login-box">
-      <h1 style="color: var(--primary);">MY PORTAL</h1>
-      <p>Premium Edition</p>
-      <input type="password" id="login-password" placeholder="PASSWORD" onkeypress="if(event.key === 'Enter') checkLogin()">
-      <button class="action-btn gold-btn" onclick="checkLogin()">LOGIN</button>
+      <h1>MY PORTAL</h1>
+      <p>ユーザーログイン / 新規登録</p>
+      <input type="email" id="auth-email" placeholder="メールアドレス">
+      <input type="password" id="auth-password" placeholder="パスワード（6文字以上）">
+      
+      <div class="auth-btn-group">
+        <button class="action-btn gold-btn" onclick="loginUser()">ログイン</button>
+        <button class="action-btn" style="background:#374151; border-color:#374151; color:#fff;" onclick="signupUser()">新規登録</button>
+      </div>
+      <p id="auth-error" style="color: var(--danger); font-size: 12px; margin-top: 15px; margin-bottom: 0;"></p>
     </div>
   </div>
 
+  <!-- ヘッダー -->
   <header>
     <div>
       <h1>MY PORTAL</h1>
-      <div class="user-info">Premium Edition</div>
+      <div class="user-info" id="user-display-email">ログイン中: 読み込み中...</div>
     </div>
+    <button class="delete-btn" style="background: rgba(255,255,255,0.1); color: #fff; border-color: rgba(255,255,255,0.3);" onclick="logoutUser()">ログアウト</button>
   </header>
 
+  <!-- タブナビゲーション -->
   <div class="tabs">
     <button class="tab-btn active" onclick="switchTab('todo', this)">📝 ToDo</button>
     <button class="tab-btn" onclick="switchTab('equipment', this)">🛒 備品管理</button>
@@ -157,7 +163,7 @@
   <div id="todo" class="content active">
     <div class="section-title">
       Smart ToDo
-      <span style="font-size:12px; color:#6b7280;">※ 期日順自動ソート＆優先度表示（高：1週間以内 / 中：2週間以内 / 小：2週間以降）</span>
+      <span style="font-size:12px; color:#6b7280;">※ 期日順自動ソート＆優先度表示</span>
     </div>
     <div class="input-group">
       <input type="text" id="todo-input" placeholder="タスク名" style="flex-grow: 2;">
@@ -176,13 +182,11 @@
       備品リスト
       <button class="action-btn" style="font-size: 12px; padding: 8px 15px;" onclick="sendAllEqToLine()">📱 全エリアの備品をLINEに送信</button>
     </div>
-    
     <div class="sub-tabs" id="eq-tabs"></div>
     <div style="margin-bottom: 25px; display: flex; gap: 10px;">
       <button class="sub-tab-btn" style="border-style: dashed;" onclick="addEqArea()">＋ エリアを追加</button>
       <button class="sub-tab-btn" style="border-style: dashed; color: var(--danger);" onclick="deleteEqArea()">🗑️ 現在のエリアを削除</button>
     </div>
-
     <div class="input-group">
       <input type="text" id="eq-input" placeholder="備品名">
       <input type="number" id="eq-count" placeholder="個数" value="1" style="max-width: 100px;">
@@ -200,7 +204,6 @@
       <input type="number" id="shop-price" placeholder="予定価格(任意)" style="max-width: 120px;">
       <button class="action-btn gold-btn" onclick="addShop()">追加</button>
     </div>
-    
     <div class="shop-area">
       <div class="shop-box">
         <h3>📋 買うものリスト</h3>
@@ -209,7 +212,6 @@
       <div class="shop-box" style="background: #fdfaf3; border-color: #f6e8c3;">
         <h3>🛒 カゴの中身</h3>
         <ul id="shop-list-cart" style="min-height: 100px;"></ul>
-        
         <div id="checkout-area" style="display: none; margin-top: 20px; padding-top: 20px; border-top: 2px dashed #d1d5db; text-align: center;">
           <div style="font-size: 20px; font-weight: bold; color: var(--primary); margin-bottom: 15px;">
             TOTAL <span id="shop-total" style="color: var(--gold); font-size: 28px;">¥ 0</span>
@@ -285,17 +287,14 @@
     <div class="input-group" style="background: transparent; border: none; padding: 0;">
       <button class="action-btn" style="background: #3b82f6; border-color: #3b82f6;" onclick="window.open('https://notebooklm.google.com/', '_blank')">NotebookLM を開く ↗</button>
     </div>
-    
     <div style="margin-top: 20px;">
       <div style="display: flex; justify-content: space-between; margin-bottom: 10px; align-items: flex-end;">
         <strong style="color: var(--primary); font-size: 18px;">下書きメモ ＆ 誤字チェック</strong>
         <span style="font-size: 16px; color: var(--text-light); font-weight: bold;"><span id="char-count" style="font-size: 24px; color: var(--primary);">0</span> 文字</span>
       </div>
       <textarea id="report-memo" rows="15" oninput="checkTypos(this)" placeholder="ここに構成や文章を入力..." style="width: 100%; box-sizing: border-box; min-height: 400px; font-size: 16px; padding: 20px; line-height: 1.8; border-radius: 8px;"></textarea>
-      
       <div id="typo-alert" class="typo-warning"></div>
     </div>
-    
     <div style="margin-top: 40px; padding-top: 20px; border-top: 1px solid var(--border);">
       <strong style="color: var(--primary);">参考文献 ジェネレーター</strong>
       <textarea id="ref-input" rows="3" placeholder="URLを改行で複数貼り付け" style="margin-top: 10px;"></textarea>
@@ -337,47 +336,122 @@
 
   <script>
     // ==========================================
-    // 🔐 ログイン機能 (初期パスワード: 0000)
+    // 🌟 Firebase 設定 ＆ 初期化
     // ==========================================
-    const CORRECT_PASSWORD = '0000';
+    const firebaseConfig = {
+      apiKey: "AIzaSyAt6b0Qw2RC2AoRGVOqdw_FYW2K4K2cjBE",
+      authDomain: "benri-site.firebaseapp.com",
+      projectId: "benri-site",
+      storageBucket: "benri-site.firebasestorage.app",
+      messagingSenderId: "163944083212",
+      appId: "1:163944083212:web:4582760d151f60ee852329",
+      measurementId: "G-QND3PXXQ5P"
+    };
 
-    function checkLogin() {
-      const input = document.getElementById('login-password').value;
-      if (input === CORRECT_PASSWORD) {
-        document.getElementById('login-screen').style.transition = "opacity 0.5s ease";
-        document.getElementById('login-screen').style.opacity = "0";
-        setTimeout(() => {
-          document.getElementById('login-screen').style.display = 'none';
-        }, 500);
+    firebase.initializeApp(firebaseConfig);
+    const auth = firebase.auth();
+    const db = firebase.firestore();
+
+    let currentUser = null;
+    let appData = {
+      todos: [],
+      equipments: { 'リビング':[], 'トイレ':[], '洗面所':[], 'キッチン':[], '風呂':[] },
+      shopping: [],
+      finance: [],
+      links: [
+        { id: 'l1', name: 'Google', url: 'https://google.com' }
+      ],
+      gasUrl: ''
+    };
+
+    // ==========================================
+    // 🔑 認証（ログイン・会員登録・ログアウト）
+    // ==========================================
+    auth.onAuthStateChanged(user => {
+      const loginScreen = document.getElementById('login-screen');
+      if (user) {
+        currentUser = user;
+        document.getElementById('user-display-email').innerText = `ログイン中: ${user.email}`;
+        loginScreen.style.display = 'none';
+        loadUserData();
       } else {
-        alert('パスワードが間違っています。');
-        document.getElementById('login-password').value = '';
+        currentUser = null;
+        loginScreen.style.display = 'flex';
       }
+    });
+
+    function loginUser() {
+      const email = document.getElementById('auth-email').value;
+      const pass = document.getElementById('auth-password').value;
+      const errEl = document.getElementById('auth-error');
+      errEl.innerText = '';
+
+      auth.signInWithEmailAndPassword(email, pass).catch(err => {
+        errEl.innerText = 'ログイン失敗: ' + err.message;
+      });
+    }
+
+    function signupUser() {
+      const email = document.getElementById('auth-email').value;
+      const pass = document.getElementById('auth-password').value;
+      const errEl = document.getElementById('auth-error');
+      errEl.innerText = '';
+
+      auth.createUserWithEmailAndPassword(email, pass).then(() => {
+        alert('アカウントを作成しました！');
+      }).catch(err => {
+        errEl.innerText = '登録失敗: ' + err.message;
+      });
+    }
+
+    function logoutUser() {
+      auth.signOut().then(() => {
+        location.reload();
+      });
     }
 
     // ==========================================
-    // 共通・初期設定
+    // ☁️ データベース同期 (Cloud Firestore)
     // ==========================================
+    function loadUserData() {
+      if (!currentUser) return;
+      db.collection('users').doc(currentUser.uid).get().then(doc => {
+        if (doc.exists) {
+          appData = Object.assign(appData, doc.data());
+        } else {
+          saveData(); // 新規ユーザー初期データ作成
+        }
+        refreshAllViews();
+      }).catch(err => {
+        console.error('データ読み込みエラー:', err);
+      });
+    }
+
+    function saveData() {
+      if (!currentUser) return;
+      db.collection('users').doc(currentUser.uid).set(appData).catch(err => {
+        console.error('データ保存エラー:', err);
+      });
+    }
+
+    function refreshAllViews() {
+      document.getElementById('fin-date').value = new Date().toISOString().split('T')[0];
+      document.getElementById('setting-gas-url').value = appData.gasUrl || '';
+      renderTodos();
+      initEqTabs();
+      renderEq();
+      renderShopping();
+      renderFinance();
+      renderLinks();
+    }
+
+    // UIタブ切替
     function switchTab(tabId, btn) {
       document.querySelectorAll('.content').forEach(el => el.classList.remove('active'));
       document.querySelectorAll('.tab-btn').forEach(el => el.classList.remove('active'));
       document.getElementById(tabId).classList.add('active');
       if(btn) btn.classList.add('active');
     }
-
-    const DB_KEY = 'myportal_premium_data';
-    let appData = JSON.parse(localStorage.getItem(DB_KEY)) || {
-      todos: [],
-      equipments: { 'リビング':[], 'トイレ':[], '洗面所':[], 'キッチン':[], '風呂':[] },
-      shopping: [],
-      finance: [],
-      links: [
-        { id: 'l1', name: '大学ポータル', url: 'https://example.com' },
-        { id: 'l2', name: 'Webシラバス', url: 'https://example.com' }
-      ],
-      gasUrl: ''
-    };
-    function saveData() { localStorage.setItem(DB_KEY, JSON.stringify(appData)); }
 
     function sendLineNotify(message) {
       if(!appData.gasUrl) return;
@@ -389,44 +463,15 @@
     }
 
     // ==========================================
-    // 1. ToDo (期日順ソート ＆ 優先度表示)
+    // 1. ToDo
     // ==========================================
-    function checkTodoReminders() {
-      const now = new Date();
-      let notifyMessages = [];
-
-      appData.todos.forEach(todo => {
-        if(todo.done || !todo.date) return;
-        const due = new Date(todo.date);
-        const diffDays = (due - now) / (1000 * 60 * 60 * 24);
-
-        if (diffDays > 0) {
-          if (diffDays <= 7 && diffDays > 6 && !todo.notified7) {
-            notifyMessages.push(`・${todo.text} (期限: あと7日)`);
-            todo.notified7 = true;
-          } else if (diffDays <= 3 && diffDays > 2 && !todo.notified3) {
-            notifyMessages.push(`・${todo.text} (期限: あと3日)`);
-            todo.notified3 = true;
-          } else if (diffDays <= 1 && diffDays > 0 && !todo.notified1) {
-            notifyMessages.push(`・${todo.text} (期限: 明日！)`);
-            todo.notified1 = true;
-          }
-        }
-      });
-      if(notifyMessages.length > 0) {
-        sendLineNotify(`📝 【ToDoリマインド】\n期限が近づいているタスクがあります！\n\n${notifyMessages.join('\n')}`);
-        saveData();
-      }
-    }
-
     function renderTodos() {
       const activeList = document.getElementById('todo-list-active');
       const doneList = document.getElementById('todo-list-done');
       activeList.innerHTML = ''; doneList.innerHTML = '';
       const now = new Date();
 
-      // 期日順ソート
-      const sortedTodos = [...appData.todos].sort((a, b) => {
+      const sortedTodos = [...(appData.todos || [])].sort((a, b) => {
         if (!a.date && !b.date) return 0;
         if (!a.date) return 1;
         if (!b.date) return -1;
@@ -439,7 +484,6 @@
 
         if (todo.date && !todo.done) {
           const diffDays = (new Date(todo.date) - now) / (1000 * 60 * 60 * 24);
-          
           if (diffDays <= 7) {
             cls = 'priority-high';
             priorityBadge = '<span style="background:var(--danger); color:white; padding:2px 8px; border-radius:4px; font-size:11px; font-weight:bold;">高</span>';
@@ -466,13 +510,13 @@
         if (todo.done) doneList.innerHTML += html;
         else activeList.innerHTML += html;
       });
-      checkTodoReminders();
     }
 
     function addTodo() {
       const text = document.getElementById('todo-input').value;
       const date = document.getElementById('todo-date').value;
       if (!text) return;
+      if (!appData.todos) appData.todos = [];
       appData.todos.push({ id: Date.now().toString(), text, date, done: false });
       document.getElementById('todo-input').value = '';
       document.getElementById('todo-date').value = '';
@@ -484,50 +528,46 @@
     // ==========================================
     // 2. 備品管理
     // ==========================================
-    let currentArea = Object.keys(appData.equipments)[0] || '未分類';
-    
+    let currentArea = 'リビング';
+
     function addEqArea() {
-      const areaName = prompt('新しいエリア名（項目名）を入力してください:');
+      const areaName = prompt('新しいエリア名を入力してください:');
       if (areaName && areaName.trim() !== '') {
+        if (!appData.equipments) appData.equipments = {};
         if (!appData.equipments[areaName]) {
           appData.equipments[areaName] = [];
           currentArea = areaName;
-          saveData();
-          initEqTabs();
-          renderEq();
-        } else {
-          alert('そのエリアは既に存在します。');
-        }
+          saveData(); initEqTabs(); renderEq();
+        } else { alert('そのエリアは既に存在します。'); }
       }
     }
-    
+
     function deleteEqArea() {
-      if (Object.keys(appData.equipments).length <= 1) {
+      if (Object.keys(appData.equipments || {}).length <= 1) {
         alert('最低1つのエリアは残しておく必要があります。');
         return;
       }
-      if (confirm(`現在のエリア「${currentArea}」を削除しますか？\n※ 中に入っている備品データもすべて消去されます。`)) {
+      if (confirm(`現在のエリア「${currentArea}」を削除しますか？`)) {
         delete appData.equipments[currentArea];
         currentArea = Object.keys(appData.equipments)[0];
-        saveData();
-        initEqTabs();
-        renderEq();
+        saveData(); initEqTabs(); renderEq();
       }
     }
 
     function initEqTabs() {
-      if (Object.keys(appData.equipments).length === 0) {
-        appData.equipments['未分類'] = [];
-        currentArea = '未分類';
-      }
-      document.getElementById('eq-tabs').innerHTML = Object.keys(appData.equipments).map(area => 
+      if (!appData.equipments) appData.equipments = { 'リビング':[] };
+      const areas = Object.keys(appData.equipments);
+      if(!areas.includes(currentArea)) currentArea = areas[0] || 'リビング';
+
+      document.getElementById('eq-tabs').innerHTML = areas.map(area => 
         `<button class="sub-tab-btn ${area===currentArea?'active':''}" onclick="currentArea='${area}'; initEqTabs(); renderEq();">${area}</button>`
       ).join('');
     }
+
     function renderEq() {
       const list = document.getElementById('eq-list');
       list.innerHTML = '';
-      (appData.equipments[currentArea] || []).forEach(eq => {
+      ((appData.equipments && appData.equipments[currentArea]) || []).forEach(eq => {
         list.innerHTML += `
           <li>
             <span style="font-weight:bold;">${eq.name}</span>
@@ -540,19 +580,23 @@
           </li>`;
       });
     }
+
     function addEq() {
       const name = document.getElementById('eq-input').value;
       const count = parseInt(document.getElementById('eq-count').value) || 1;
       if(!name) return;
+      if(!appData.equipments[currentArea]) appData.equipments[currentArea] = [];
       appData.equipments[currentArea].push({ id: Date.now().toString(), name, count });
       document.getElementById('eq-input').value = ''; saveData(); renderEq();
     }
+
     function updateEq(id, change) {
       let eq = appData.equipments[currentArea].find(x => x.id === id);
       if(eq) {
         eq.count += change;
         if(eq.count <= 0) {
           eq.count = 0;
+          if(!appData.shopping) appData.shopping = [];
           if(!appData.shopping.find(x => x.name === eq.name && !x.checked)) {
             appData.shopping.push({ id: Date.now().toString(), name: eq.name, qty: 1, price: 0, checked: false });
             sendLineNotify(`🛒【備品切れアラート】\n${currentArea}の「${eq.name}」が0になりました！買い物リストに追加しました。`);
@@ -562,10 +606,10 @@
       }
     }
     function deleteEq(id) { appData.equipments[currentArea] = appData.equipments[currentArea].filter(x => x.id !== id); saveData(); renderEq(); }
-    
+
     function sendAllEqToLine() {
       let msg = "📦 【備品リスト一覧】\n";
-      for (const [area, items] of Object.entries(appData.equipments)) {
+      for (const [area, items] of Object.entries(appData.equipments || {})) {
         if(items.length > 0) {
           msg += `\n[${area}]\n` + items.map(i => `・${i.name}: ${i.count}個`).join('\n') + '\n';
         }
@@ -585,7 +629,7 @@
       let total = 0;
       let pendingCount = 0;
 
-      appData.shopping.forEach(item => {
+      (appData.shopping || []).forEach(item => {
         const html = `
           <li style="border-left: 4px solid ${item.checked ? 'var(--success)' : 'var(--gold)'};">
             <div style="display:flex; align-items:center; gap:10px; flex-grow:1;">
@@ -610,20 +654,21 @@
 
       document.getElementById('shop-total').innerText = '¥ ' + total.toLocaleString();
       const checkoutArea = document.getElementById('checkout-area');
-      if(pendingCount === 0 && appData.shopping.length > 0) {
+      if(pendingCount === 0 && (appData.shopping || []).length > 0) {
         checkoutArea.style.display = 'block';
       } else {
         checkoutArea.style.display = 'none';
       }
     }
-    
+
     function addShop() {
       const name = document.getElementById('shop-input').value;
       const qty = parseInt(document.getElementById('shop-qty').value) || 1;
       const price = parseInt(document.getElementById('shop-price').value) || 0;
       if(!name) return;
+      if(!appData.shopping) appData.shopping = [];
       appData.shopping.push({ id: Date.now().toString(), name, qty, price, checked: false });
-      document.getElementById('shop-input').value = ''; 
+      document.getElementById('shop-input').value = '';
       document.getElementById('shop-qty').value = '1';
       document.getElementById('shop-price').value = '';
       saveData(); renderShopping();
@@ -639,6 +684,7 @@
       const names = cartItems.map(x => `${x.name}(${x.qty || 1})`).join(' / ');
 
       const today = new Date().toISOString().split('T')[0];
+      if(!appData.finance) appData.finance = [];
       appData.finance.push({ id: Date.now().toString(), date: today, type: 'expense', name: `買物: ${names}`, method: method, amount: total });
       
       appData.shopping = appData.shopping.filter(x => !x.checked);
@@ -649,24 +695,12 @@
     // ==========================================
     // 4. 家計簿
     // ==========================================
-    function checkMonthlyFinanceReport() {
-      const now = new Date();
-      const tomorrow = new Date(now.getTime() + 24 * 60 * 60 * 1000);
-      const todayStr = now.toISOString().split('T')[0];
-      
-      if (tomorrow.getDate() === 1 && appData.lastFinanceReport !== todayStr) {
-        sendMonthlyReport();
-        appData.lastFinanceReport = todayStr;
-        saveData();
-      }
-    }
-
     function sendMonthlyReport() {
       const now = new Date();
       const currentMonth = `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, '0')}`;
       let mInc = 0, mExp = 0;
       
-      appData.finance.forEach(f => {
+      (appData.finance || []).forEach(f => {
         if(f.date.startsWith(currentMonth)) {
           if(f.type === 'income') mInc += f.amount; else mExp += f.amount;
         }
@@ -679,12 +713,12 @@
     function renderFinance() {
       const list = document.getElementById('finance-list');
       list.innerHTML = '';
-      appData.finance.sort((a, b) => new Date(a.date) - new Date(b.date));
+      const sortedFin = [...(appData.finance || [])].sort((a, b) => new Date(a.date) - new Date(b.date));
       
       let balance = 0, monthIncome = 0, monthExpense = 0;
       const currentMonth = new Date().toISOString().slice(0, 7);
 
-      appData.finance.forEach(f => {
+      sortedFin.forEach(f => {
         if(f.type === 'income') {
           balance += f.amount;
           if(f.date.startsWith(currentMonth)) monthIncome += f.amount;
@@ -710,9 +744,8 @@
       document.getElementById('dash-income').innerText = `¥ ${monthIncome.toLocaleString()}`;
       document.getElementById('dash-expense').innerText = `¥ ${monthExpense.toLocaleString()}`;
       document.getElementById('dash-total').innerText = `¥ ${balance.toLocaleString()}`;
-      checkMonthlyFinanceReport();
     }
-    
+
     function addFinance() {
       const type = document.getElementById('fin-type').value;
       const date = document.getElementById('fin-date').value || new Date().toISOString().split('T')[0];
@@ -720,6 +753,7 @@
       const method = document.getElementById('fin-method').value;
       const amount = parseInt(document.getElementById('fin-amount').value);
       if(!name || !amount) return;
+      if(!appData.finance) appData.finance = [];
       appData.finance.push({ id: Date.now().toString(), type, date, name, method, amount });
       document.getElementById('fin-name').value = ''; document.getElementById('fin-amount').value = '';
       saveData(); renderFinance();
@@ -727,7 +761,7 @@
     function deleteFinance(id) { appData.finance = appData.finance.filter(x => x.id !== id); saveData(); renderFinance(); }
 
     // ==========================================
-    // 5. レポート
+    // 5. レポート支援
     // ==========================================
     function checkTypos(textarea) {
       document.getElementById('char-count').innerText = textarea.value.length;
@@ -771,7 +805,7 @@
     function renderLinks() {
       const list = document.getElementById('links-list');
       list.innerHTML = '';
-      appData.links.forEach(link => {
+      (appData.links || []).forEach(link => {
         list.innerHTML += `
           <li class="link-item">
             <a href="${link.url}" target="_blank">🔗 ${link.name}</a>
@@ -779,10 +813,12 @@
           </li>`;
       });
     }
+
     function addLink() {
       const name = document.getElementById('link-name').value;
       const url = document.getElementById('link-url').value;
       if(!name || !url) return;
+      if(!appData.links) appData.links = [];
       appData.links.push({ id: Date.now().toString(), name, url });
       document.getElementById('link-name').value = ''; document.getElementById('link-url').value = '';
       saveData(); renderLinks();
@@ -796,12 +832,13 @@
       appData.gasUrl = document.getElementById('setting-gas-url').value.trim();
       saveData(); alert('URLを保存しました！');
     }
+
     function testLineNotify() {
       saveSettings();
       fetch(appData.gasUrl, {
         method: 'POST', mode: 'no-cors',
         headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
-        body: 'message=' + encodeURIComponent('📱【テスト完了】\nPremium Edition からの通信に成功しました！✨')
+        body: 'message=' + encodeURIComponent('📱【テスト完了】\nFirebase Edition からの通信に成功しました！✨')
       }).then(() => alert('送信リクエスト完了！LINEを確認してください。'));
     }
 
@@ -826,26 +863,14 @@
           try {
             appData = JSON.parse(event.target.result);
             saveData();
-            alert('データの復元が完了しました。ページを再読み込みします。');
-            location.reload();
+            alert('データの復元が完了しました！');
+            refreshAllViews();
           } catch(err) { alert('不正なファイルです。'); }
         }
         reader.readAsText(file);
       }
       input.click();
     }
-
-    // 初期化
-    window.onload = () => {
-      document.getElementById('fin-date').value = new Date().toISOString().split('T')[0];
-      document.getElementById('setting-gas-url').value = appData.gasUrl || '';
-      renderTodos();
-      initEqTabs();
-      renderEq();
-      renderShopping();
-      renderFinance();
-      renderLinks();
-    };
   </script>
 </body>
 </html>
