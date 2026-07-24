@@ -337,9 +337,9 @@
 
   <script>
     // ==========================================
-    // 🔐 ログイン機能
+    // 🔐 ログイン機能 (初期パスワード: 0000)
     // ==========================================
-    const CORRECT_PASSWORD = '0000'; // ← ★ここで好きなパスワードに変更できます
+    const CORRECT_PASSWORD = '0000';
 
     function checkLogin() {
       const input = document.getElementById('login-password').value;
@@ -389,7 +389,7 @@
     }
 
     // ==========================================
-    // 1. ToDo (期日順ソート ＆ 優先度表示: 高・中・小)
+    // 1. ToDo (期日順ソート ＆ 優先度表示)
     // ==========================================
     function checkTodoReminders() {
       const now = new Date();
@@ -425,7 +425,7 @@
       activeList.innerHTML = ''; doneList.innerHTML = '';
       const now = new Date();
 
-      // ★ 期日順にソート（日時が近いものが上、日時未設定は一番下）
+      // 期日順ソート
       const sortedTodos = [...appData.todos].sort((a, b) => {
         if (!a.date && !b.date) return 0;
         if (!a.date) return 1;
@@ -440,7 +440,6 @@
         if (todo.date && !todo.done) {
           const diffDays = (new Date(todo.date) - now) / (1000 * 60 * 60 * 24);
           
-          // ★ 優先度の判定（高：一週間以内、中：二週間以内、小：二週間以降）
           if (diffDays <= 7) {
             cls = 'priority-high';
             priorityBadge = '<span style="background:var(--danger); color:white; padding:2px 8px; border-radius:4px; font-size:11px; font-weight:bold;">高</span>';
@@ -483,7 +482,7 @@
     function deleteTodo(id) { appData.todos = appData.todos.filter(x => x.id !== id); saveData(); renderTodos(); }
 
     // ==========================================
-    // 2. 備品管理 (エリアカスタマイズ対応)
+    // 2. 備品管理
     // ==========================================
     let currentArea = Object.keys(appData.equipments)[0] || '未分類';
     
