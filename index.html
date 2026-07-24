@@ -37,7 +37,9 @@
     .priority-high { border-left: 5px solid #e74c3c; background: #fdf5f5; font-weight: bold; }
     .priority-mid { border-left: 5px solid #f39c12; }
     .todo-item { cursor: pointer; flex-grow: 1; }
-    
+    .todo-sub-header { font-size: 15px; color: #2c3e50; margin-top: 20px; margin-bottom: 10px; font-weight: bold; }
+    .todo-sub-header.done-header { color: #7f8c8d; margin-top: 30px; border-top: 1px dashed #e0e0e0; padding-top: 15px; }
+
     /* モーダル */
     .modal-overlay { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.5); justify-content: center; align-items: center; z-index: 1000; }
     .modal-content { background: #fff; padding: 20px; border-radius: 8px; width: 90%; max-width: 400px; }
@@ -106,7 +108,12 @@
       <input type="datetime-local" id="todo-date">
       <button class="action-btn" onclick="addTodo()">追加</button>
     </div>
-    <ul id="todo-list"></ul>
+
+    <div class="todo-sub-header">📌 未完了のタスク</div>
+    <ul id="todo-list-active"></ul>
+
+    <div class="todo-sub-header done-header">✅ 完了済みのタスク</div>
+    <ul id="todo-list-done"></ul>
   </div>
 
   <!-- 備品管理 -->
@@ -237,10 +244,15 @@
   <script>
     const GAS_URL = 'https://script.google.com/macros/s/AKfycbzWSTMccF34lDqPkjTgsZf-UCMq6ejYlAROxmEihd4bzzHkTmKHwg22tG6eocIlBuJUhA/exec';
 
-    // 共通: LINE通知
+    // 共通: LINE通知 (mode: 'no-cors' を指定してブラウザブロックを回避)
     function sendLineNotify(message) {
       if(!GAS_URL) return;
-      fetch(GAS_URL, { method: 'POST', headers: { 'Content-Type': 'application/x-www-form-urlencoded' }, body: 'message=' + encodeURIComponent(message) }).catch(e=>console.log(e));
+      fetch(GAS_URL, {
+        method: 'POST',
+        mode: 'no-cors',
+        headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
+        body: 'message=' + encodeURIComponent(message)
+      }).catch(e => console.log('LINE通知送信エラー:', e));
     }
 
     // 共通: タブ切り替え
@@ -266,13 +278,15 @@
     function saveData() { localStorage.setItem(DB_KEY, JSON.stringify(appData)); }
 
     // ==========================================
-    // 📝 Smart ToDo
+    // 📝 Smart ToDo（未完了/完了済みの分離レンダリング）
     // ==========================================
     let currentTodoId = null;
 
     function renderTodos() {
-      const list = document.getElementById('todo-list');
-      list.innerHTML = '';
+      const activeList = document.getElementById('todo-list-active');
+      const doneList = document.getElementById('todo-list-done');
+      activeList.innerHTML = '';
+      doneList.innerHTML = '';
       const now = new Date();
 
       appData.todos.forEach(todo => {
@@ -299,17 +313,30 @@
           displayDateText = todo.date.replace('T', ' ');
         }
 
-        list.innerHTML += `
-          <li class="${cls}" style="${todo.done ? 'opacity:0.5;' : ''}">
+        const itemHtml = `
+          <li class="${todo.done ? '' : cls}" style="${todo.done ? 'opacity:0.6; background:#f0f3f4;' : ''}">
             <input type="checkbox" ${todo.done ? 'checked' : ''} onchange="toggleTodo('${todo.id}')" style="margin-right:10px;">
             <div class="todo-item" onclick="openModal('${todo.id}')">
-              <span style="${todo.done ? 'text-decoration:line-through;' : ''}">${todo.text}</span>
-              ${todo.date ? `<span style="font-size:12px; color:#7f8c8d; margin-left:10px;">⏳ ${displayDateText} [${priorityLabel}]</span>` : ''}
+              <span style="${todo.done ? 'text-decoration:line-through; color:#7f8c8d;' : ''}">${todo.text}</span>
+              ${todo.date ? `<span style="font-size:12px; color:#7f8c8d; margin-left:10px;">⏳ ${displayDateText} ${!todo.done ? '[' + priorityLabel + ']' : ''}</span>` : ''}
             </div>
             <button class="delete-btn" onclick="deleteTodo('${todo.id}')">削除</button>
           </li>
         `;
+
+        if (todo.done) {
+          doneList.innerHTML += itemHtml;
+        } else {
+          activeList.innerHTML += itemHtml;
+        }
       });
+
+      if (activeList.innerHTML === '') {
+        activeList.innerHTML = '<li style="color:#95a5a6; font-size:13px; justify-content:center; background:none; border:none;">未完了のタスクはありません🎉</li>';
+      }
+      if (doneList.innerHTML === '') {
+        doneList.innerHTML = '<li style="color:#95a5a6; font-size:13px; justify-content:center; background:none; border:none;">完了済みのタスクはありません</li>';
+      }
     }
 
     function addTodo() {
@@ -429,7 +456,7 @@
           </li>
         `;
       });
-      updateShopTotal(); // 描画時に合計金額を更新
+      updateShopTotal();
     }
 
     function addShop() {
@@ -453,7 +480,6 @@
       saveData(); renderShopping();
     }
 
-    // 一括会計
     function checkoutShopping() {
       const checkedItems = appData.shopping.filter(x => x.checked);
       if(checkedItems.length === 0) { alert('家計簿に記録する項目をチェックしてください！'); return; }
@@ -462,13 +488,11 @@
       const method = document.getElementById('shop-payment').value;
       const names = checkedItems.map(x => x.name).join(' / ');
 
-      // 家計簿に追加（決済方法も記録）
       const today = new Date().toISOString().split('T')[0];
       appData.finance.push({
         id: Date.now().toString(), date: today, type: 'expense', name: `買物: ${names}`, method: method, amount: total
       });
       
-      // 買い物リストから削除
       appData.shopping = appData.shopping.filter(x => !x.checked);
       saveData(); renderShopping(); renderFinance(); switchTab('finance');
       sendLineNotify(`🏦【家計簿記録】\nお買い物完了！\n金額: ${total}円\n支払: ${method}\n内容: ${names}`);
@@ -481,7 +505,6 @@
       const list = document.getElementById('finance-list');
       list.innerHTML = '';
       
-      // 日付順にソート
       appData.finance.sort((a, b) => new Date(a.date) - new Date(b.date));
       
       let balance = 0;
@@ -541,7 +564,6 @@
       document.getElementById('ref-output').value = result;
     }
 
-    // ドラッグ＆ドロップ実装
     let draggedIndex = null;
     
     function renderLinks() {
@@ -570,6 +592,19 @@
         
         list.appendChild(li);
       });
+    }
+
+    function addLink() {
+      const name = document.getElementById('link-name').value;
+      const url = document.getElementById('link-url').value;
+      if(!name || !url) return;
+      appData.links.push({ id: Date.now().toString(), name, url });
+      document.getElementById('link-name').value = ''; document.getElementById('link-url').value = '';
+      saveData(); renderLinks();
+    }
+    function deleteLink(id) {
+      appData.links = appData.links.filter(x => x.id !== id);
+      saveData(); renderLinks();
     }
 
     // 初期化
