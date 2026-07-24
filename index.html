@@ -98,6 +98,7 @@
     <button class="tab-btn" onclick="switchTab('finance', this)">🏦 家計簿</button>
     <button class="tab-btn" onclick="switchTab('report', this)">📄 レポート</button>
     <button class="tab-btn" onclick="switchTab('links', this)">🎓 リンク集</button>
+    <button class="tab-btn" onclick="switchTab('settings', this)">⚙️ 設定</button>
   </div>
 
   <!-- Smart ToDo -->
@@ -229,6 +230,31 @@
     <ul id="links-list"></ul>
   </div>
 
+  <!-- ⚙️ 設定 -->
+  <div id="settings" class="content">
+    <h2 class="section-title">システム設定</h2>
+    <div style="margin-bottom: 20px; background: #fdf5f5; padding: 15px; border-radius: 8px; border-left: 5px solid #e74c3c;">
+      <h3 style="margin-top: 0; font-size: 16px; color: #c0392b;">LINE通知の連携テスト</h3>
+      <p style="font-size: 14px; margin-bottom: 10px;">Google Apps Script (GAS) の「ウェブアプリのURL」を入力してください。</p>
+      
+      <input type="text" id="setting-gas-url" placeholder="https://script.google.com/macros/s/..." style="width: 100%; box-sizing: border-box; margin-bottom: 15px;">
+      
+      <div style="display: flex; gap: 10px; flex-wrap: wrap;">
+        <button class="action-btn" onclick="saveSettings()">URLを保存する</button>
+        <button class="action-btn" style="background: #f39c12;" onclick="testLineNotify()">通知をテスト送信 🚀</button>
+      </div>
+    </div>
+    
+    <div style="background: #ecf0f1; padding: 15px; border-radius: 8px; font-size: 13px; color: #2c3e50;">
+      <strong>💡 テスト送信してもLINEが来ない場合のチェックリスト</strong>
+      <ol style="margin-bottom: 0; padding-left: 20px;">
+        <li>GASのスクリプト側でLINE Notifyのトークンが正しく設定されているか</li>
+        <li>GASのコードを修正した際、<strong>必ず「新しいデプロイ」としてバージョン更新</strong>しているか（上書き保存だけでは反映されません）</li>
+        <li>URLは「/exec」で終わる正しいウェブアプリURLか</li>
+      </ol>
+    </div>
+  </div>
+
   <!-- ToDo詳細モーダル -->
   <div class="modal-overlay" id="todo-modal">
     <div class="modal-content">
@@ -242,19 +268,6 @@
   </div>
 
   <script>
-    const GAS_URL = 'https://script.google.com/macros/s/AKfycbzWSTMccF34lDqPkjTgsZf-UCMq6ejYlAROxmEihd4bzzHkTmKHwg22tG6eocIlBuJUhA/exec';
-
-    // 共通: LINE通知 (mode: 'no-cors' を指定してブラウザブロックを回避)
-    function sendLineNotify(message) {
-      if(!GAS_URL) return;
-      fetch(GAS_URL, {
-        method: 'POST',
-        mode: 'no-cors',
-        headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
-        body: 'message=' + encodeURIComponent(message)
-      }).catch(e => console.log('LINE通知送信エラー:', e));
-    }
-
     // 共通: タブ切り替え
     function switchTab(tabId, btn) {
       document.querySelectorAll('.content').forEach(el => el.classList.remove('active'));
@@ -273,12 +286,70 @@
       links: [
         { id: 'l1', name: '大学ポータル', url: 'https://example.com' },
         { id: 'l2', name: 'Webシラバス', url: 'https://example.com' }
-      ]
+      ],
+      gasUrl: 'https://script.google.com/macros/s/AKfycbzWSTMccF34lDqPkjTgsZf-UCMq6ejYlAROxmEihd4bzzHkTmKHwg22tG6eocIlBuJUhA/exec' // 初期URL
     };
+    
+    // データ互換性（以前のバージョンでgasUrlが存在しない場合）
+    if (!appData.gasUrl) {
+      appData.gasUrl = 'https://script.google.com/macros/s/AKfycbzWSTMccF34lDqPkjTgsZf-UCMq6ejYlAROxmEihd4bzzHkTmKHwg22tG6eocIlBuJUhA/exec';
+    }
+
     function saveData() { localStorage.setItem(DB_KEY, JSON.stringify(appData)); }
 
+    // 共通: LINE通知 (動的なGAS_URLを使用)
+    function sendLineNotify(message) {
+      if(!appData.gasUrl) return;
+      fetch(appData.gasUrl, {
+        method: 'POST',
+        mode: 'no-cors',
+        headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
+        body: 'message=' + encodeURIComponent(message)
+      }).catch(e => console.log('LINE通知送信エラー:', e));
+    }
+
     // ==========================================
-    // 📝 Smart ToDo（未完了/完了済みの分離レンダリング）
+    // ⚙️ 設定
+    // ==========================================
+    function initSettings() {
+      document.getElementById('setting-gas-url').value = appData.gasUrl || '';
+    }
+
+    function saveSettings() {
+      const url = document.getElementById('setting-gas-url').value.trim();
+      appData.gasUrl = url;
+      saveData();
+      alert('設定を保存しました！');
+    }
+
+    function testLineNotify() {
+      const url = document.getElementById('setting-gas-url').value.trim();
+      if (!url) {
+        alert('GASのURLが入力されていません！');
+        return;
+      }
+      
+      // 送信前に一応保存しておく
+      appData.gasUrl = url;
+      saveData();
+
+      alert('テスト通知を送信します。OKを押した後、数秒待ってからLINEを確認してください。');
+
+      fetch(url, {
+        method: 'POST',
+        mode: 'no-cors',
+        headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
+        body: 'message=' + encodeURIComponent('📱【テスト完了】\nMY PORTALからのテスト通信に成功しました！🎉')
+      }).then(() => {
+        alert('🌐 送信リクエストが完了しました。\n\n※これでLINEが鳴らない場合は、URLが間違っているか、GAS側の設定に問題がある可能性が高いです。\n「新しいデプロイ」ができているかご確認ください。');
+      }).catch(e => {
+        alert('送信エラー: ネットワーク接続等を確認してください。\n' + e.message);
+      });
+    }
+
+
+    // ==========================================
+    // 📝 Smart ToDo
     // ==========================================
     let currentTodoId = null;
 
@@ -610,6 +681,7 @@
     // 初期化
     window.onload = () => {
       document.getElementById('fin-date').value = new Date().toISOString().split('T')[0];
+      initSettings(); // 設定用URL読み込み
       renderTodos();
       initEqTabs();
       renderShopping();
