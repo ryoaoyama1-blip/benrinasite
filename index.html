@@ -3,83 +3,99 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>MY PORTAL</title>
+  <title>MY PORTAL - Premium</title>
   <style>
-    /* ベース設定 */
-    body { font-family: 'Helvetica Neue', Arial, sans-serif; margin: 0; padding: 0; color: #333; background-color: #f4f7f6; }
-    header { background: #fff; padding: 15px 30px; display: flex; justify-content: space-between; align-items: center; box-shadow: 0 2px 4px rgba(0,0,0,0.1); margin-bottom: 20px; }
-    h1 { margin: 0; font-size: 24px; color: #2c3e50; letter-spacing: 1px; }
-    .user-info { font-size: 13px; color: #7f8c8d; margin-top: 5px; }
+    /* =======================================
+       🎨 プレミアムデザイン ベース設定
+       ======================================= */
+    :root {
+      --primary: #111827;      /* ディープネイビー */
+      --gold: #D4AF37;         /* シャンパンゴールド */
+      --gold-hover: #b5952f;
+      --bg-color: #f3f4f6;
+      --surface: #ffffff;
+      --text: #1f2937;
+      --text-light: #6b7280;
+      --border: #e5e7eb;
+      --danger: #ef4444;
+      --success: #10b981;
+    }
+    
+    body { font-family: 'Helvetica Neue', 'Hiragino Kaku Gothic ProN', Arial, sans-serif; margin: 0; padding: 0; color: var(--text); background-color: var(--bg-color); letter-spacing: 0.05em; }
+    
+    /* ヘッダー */
+    header { background: var(--primary); padding: 20px 40px; display: flex; justify-content: space-between; align-items: center; box-shadow: 0 4px 15px rgba(0,0,0,0.1); }
+    h1 { margin: 0; font-size: 26px; color: var(--gold); letter-spacing: 3px; font-weight: 300; }
+    .user-info { font-size: 13px; color: #9ca3af; margin-top: 5px; }
     
     /* タブ */
-    .tabs { display: flex; overflow-x: auto; background: #fff; padding: 0 20px; box-shadow: 0 2px 4px rgba(0,0,0,0.05); margin-bottom: 20px; }
-    .tab-btn { padding: 15px 20px; border: none; background: transparent; cursor: pointer; font-weight: bold; color: #95a5a6; border-bottom: 3px solid transparent; white-space: nowrap; font-size: 15px; transition: all 0.2s; }
-    .tab-btn:hover { color: #34495e; }
-    .tab-btn.active { color: #3498db; border-bottom: 3px solid #3498db; }
+    .tabs { display: flex; overflow-x: auto; background: var(--surface); padding: 0 30px; box-shadow: 0 2px 10px rgba(0,0,0,0.03); margin-bottom: 30px; border-bottom: 1px solid var(--border); }
+    .tab-btn { padding: 18px 25px; border: none; background: transparent; cursor: pointer; font-weight: bold; color: var(--text-light); border-bottom: 3px solid transparent; white-space: nowrap; font-size: 15px; transition: all 0.3s ease; }
+    .tab-btn:hover { color: var(--primary); }
+    .tab-btn.active { color: var(--primary); border-bottom: 3px solid var(--gold); }
     
     /* コンテンツエリア */
-    .content { padding: 20px 30px; max-width: 900px; margin: 0 auto 40px; display: none; background: #fff; border-radius: 8px; box-shadow: 0 4px 6px rgba(0,0,0,0.05); }
-    .content.active { display: block; }
-    .section-title { border-bottom: 2px solid #ecf0f1; padding-bottom: 10px; margin-top: 0; margin-bottom: 20px; color: #2c3e50; }
+    .content { padding: 40px; max-width: 950px; margin: 0 auto 50px; display: none; background: var(--surface); border-radius: 12px; box-shadow: 0 10px 30px rgba(0,0,0,0.05); }
+    .content.active { display: block; animation: fadeIn 0.4s ease; }
+    @keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
+    
+    .section-title { border-bottom: 1px solid var(--border); padding-bottom: 15px; margin-top: 0; margin-bottom: 30px; color: var(--primary); font-size: 22px; font-weight: 300; display: flex; justify-content: space-between; align-items: center; }
     
     /* フォーム要素 */
-    .input-group { display: flex; gap: 10px; margin-bottom: 20px; flex-wrap: wrap; align-items: center; }
-    input[type="text"], input[type="number"], input[type="date"], input[type="datetime-local"], select { padding: 10px; border: 1px solid #bdc3c7; border-radius: 6px; flex-grow: 1; outline: none; }
-    button.action-btn { padding: 10px 20px; background: #3498db; color: #fff; border: none; border-radius: 6px; cursor: pointer; font-weight: bold; }
-    button.action-btn:hover { background: #2980b9; }
+    .input-group { display: flex; gap: 15px; margin-bottom: 25px; flex-wrap: wrap; align-items: center; background: #f9fafb; padding: 20px; border-radius: 8px; border: 1px solid var(--border); }
+    input[type="text"], input[type="number"], input[type="date"], input[type="datetime-local"], select, textarea { padding: 12px 15px; border: 1px solid var(--border); border-radius: 6px; flex-grow: 1; outline: none; font-size: 15px; transition: border 0.3s; }
+    input:focus, select:focus, textarea:focus { border-color: var(--gold); box-shadow: 0 0 0 2px rgba(212, 175, 55, 0.2); }
+    
+    button.action-btn { padding: 12px 25px; background: var(--primary); color: var(--gold); border: 1px solid var(--primary); border-radius: 6px; cursor: pointer; font-weight: bold; font-size: 14px; transition: all 0.3s; letter-spacing: 1px; }
+    button.action-btn:hover { background: #1f2937; color: #fff; box-shadow: 0 4px 10px rgba(0,0,0,0.1); }
+    button.gold-btn { background: var(--gold); color: var(--primary); border-color: var(--gold); }
+    button.gold-btn:hover { background: var(--gold-hover); color: var(--primary); }
     
     /* リスト */
     ul { list-style: none; padding: 0; margin: 0; }
-    li { display: flex; justify-content: space-between; padding: 12px 15px; background: #f9fbfb; border: 1px solid #ecf0f1; border-radius: 6px; margin-bottom: 8px; align-items: center; }
-    .delete-btn { background: #e74c3c; color: #fff; border: none; padding: 5px 10px; cursor: pointer; border-radius: 4px; font-size: 12px; }
+    li { display: flex; justify-content: space-between; padding: 15px 20px; background: #ffffff; border: 1px solid var(--border); border-radius: 8px; margin-bottom: 10px; align-items: center; box-shadow: 0 2px 5px rgba(0,0,0,0.02); transition: transform 0.2s; }
+    li:hover { transform: translateX(3px); border-color: #d1d5db; }
+    .delete-btn { background: transparent; color: var(--text-light); border: 1px solid var(--border); padding: 6px 12px; cursor: pointer; border-radius: 4px; font-size: 12px; transition: 0.2s; }
+    .delete-btn:hover { background: var(--danger); color: white; border-color: var(--danger); }
     
     /* ToDo専用 */
-    .priority-high { border-left: 5px solid #e74c3c; background: #fdf5f5; font-weight: bold; }
-    .priority-mid { border-left: 5px solid #f39c12; }
-    .todo-item { cursor: pointer; flex-grow: 1; }
-    .todo-sub-header { font-size: 15px; color: #2c3e50; margin-top: 20px; margin-bottom: 10px; font-weight: bold; }
-    .todo-sub-header.done-header { color: #7f8c8d; margin-top: 30px; border-top: 1px dashed #e0e0e0; padding-top: 15px; }
+    .priority-high { border-left: 4px solid var(--danger); }
+    .priority-mid { border-left: 4px solid var(--gold); }
+    .todo-sub-header { font-size: 16px; color: var(--primary); margin: 25px 0 15px; font-weight: bold; }
+    
+    /* サブタブ */
+    .sub-tabs { display: flex; gap: 10px; margin-bottom: 20px; }
+    .sub-tab-btn { padding: 10px 20px; border: 1px solid var(--border); background: #f9fafb; border-radius: 6px; cursor: pointer; font-size: 14px; color: var(--text-light); transition: 0.3s; }
+    .sub-tab-btn.active { background: var(--primary); color: var(--gold); border-color: var(--primary); }
 
-    /* モーダル */
-    .modal-overlay { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.5); justify-content: center; align-items: center; z-index: 1000; }
-    .modal-content { background: #fff; padding: 20px; border-radius: 8px; width: 90%; max-width: 400px; }
+    /* 買い物リスト専用 */
+    .shop-area { display: grid; grid-template-columns: 1fr 1fr; gap: 30px; }
+    @media(max-width: 768px){ .shop-area { grid-template-columns: 1fr; } }
+    .shop-box { background: #f9fafb; padding: 20px; border-radius: 8px; border: 1px solid var(--border); }
+    .shop-box h3 { margin-top: 0; font-size: 16px; color: var(--primary); text-align: center; border-bottom: 2px solid var(--border); padding-bottom: 10px; }
     
-    /* 備品エリアタブ */
-    .sub-tabs { display: flex; gap: 5px; margin-bottom: 15px; }
-    .sub-tab-btn { padding: 8px 12px; border: 1px solid #bdc3c7; background: #ecf0f1; border-radius: 4px; cursor: pointer; font-size: 13px; }
-    .sub-tab-btn.active { background: #34495e; color: #fff; border-color: #34495e; }
-    
-    /* リンク集 ドラッグ＆ドロップ */
-    .drag-handle { cursor: grab; padding: 0 10px; color: #bdc3c7; font-size: 20px; user-select: none; }
-    .drag-over { border: 2px dashed #3498db; }
+    /* 家計簿ダッシュボード */
+    .finance-dash { display: flex; gap: 20px; margin-bottom: 25px; }
+    .fin-card { flex: 1; background: #fff; padding: 20px; border-radius: 8px; border: 1px solid var(--border); text-align: center; box-shadow: 0 4px 6px rgba(0,0,0,0.02); }
+    .fin-card h4 { margin: 0 0 10px 0; color: var(--text-light); font-size: 14px; font-weight: normal; }
+    .fin-card .amount { font-size: 24px; font-weight: bold; color: var(--primary); }
+    .amount.income { color: var(--success); }
+    .amount.expense { color: var(--danger); }
 
-    /* レジ風表示（買い物） */
-    .register-display {
-      background: #1e272e;
-      color: #0be881;
-      font-family: 'Courier New', Courier, monospace;
-      font-size: 28px;
-      text-align: right;
-      padding: 15px 20px;
-      border-radius: 6px;
-      margin-bottom: 15px;
-      box-shadow: inset 0 2px 5px rgba(0,0,0,0.6);
-      font-weight: bold;
-      letter-spacing: 2px;
-    }
+    /* テーブル */
+    .premium-table { width: 100%; border-collapse: collapse; margin-top: 10px; }
+    .premium-table th { background: #f9fafb; padding: 12px; font-size: 13px; color: var(--text-light); text-align: center; border-bottom: 2px solid var(--border); }
+    .premium-table td { padding: 15px 12px; border-bottom: 1px solid var(--border); font-size: 14px; text-align: right; }
+    .premium-table td:nth-child(2), .premium-table td:nth-child(3) { text-align: left; }
+    .premium-table tr:hover { background: #f9fafb; }
     
-    /* 通帳風 家計簿 */
-    .passbook-container { background: #fdf6e3; padding: 20px; border-radius: 8px; border: 1px solid #dcdde1; box-shadow: inset 0 0 10px rgba(0,0,0,0.05); font-family: 'Courier New', Courier, monospace; }
-    .passbook-table { width: 100%; border-collapse: collapse; background: #fff; }
-    .passbook-table th { border: 1px solid #7f8c8d; background: #ecf0f1; padding: 8px; text-align: center; color: #2c3e50; font-size: 14px; }
-    .passbook-table td { border: 1px solid #bdc3c7; padding: 8px; text-align: right; cursor: pointer; font-size: 14px; }
-    .passbook-table td:nth-child(2), .passbook-table td:nth-child(3) { text-align: left; }
-    .passbook-table tr:hover td { background: #f1f2f6; }
-    .pb-income { color: #2ecc71; }
-    .pb-expense { color: #e74c3c; }
+    /* リンク集 */
+    .link-item { padding: 20px; font-size: 16px; }
+    .link-item a { color: var(--primary); text-decoration: none; font-weight: bold; display: flex; align-items: center; gap: 10px; width: 100%; }
+    .link-item a:hover { color: var(--gold); }
     
-    /* レポート */
-    textarea { width: 100%; padding: 10px; border: 1px solid #bdc3c7; border-radius: 6px; box-sizing: border-box; resize: vertical; }
+    /* レポート・誤字チェッカー */
+    .typo-warning { color: var(--danger); font-size: 13px; margin-top: 10px; background: #fef2f2; padding: 10px; border-radius: 6px; border: 1px solid #fca5a5; display: none; }
   </style>
 </head>
 <body>
@@ -87,12 +103,12 @@
   <header>
     <div>
       <h1>MY PORTAL</h1>
-      <div class="user-info">ryo.aaa0621@icloud.com でログイン中</div>
+      <div class="user-info">Premium Edition</div>
     </div>
   </header>
 
   <div class="tabs">
-    <button class="tab-btn active" onclick="switchTab('todo', this)">📝 Smart ToDo</button>
+    <button class="tab-btn active" onclick="switchTab('todo', this)">📝 ToDo</button>
     <button class="tab-btn" onclick="switchTab('equipment', this)">🛒 備品管理</button>
     <button class="tab-btn" onclick="switchTab('shopping', this)">🛍️ 買い物</button>
     <button class="tab-btn" onclick="switchTab('finance', this)">🏦 家計簿</button>
@@ -101,76 +117,106 @@
     <button class="tab-btn" onclick="switchTab('settings', this)">⚙️ 設定</button>
   </div>
 
-  <!-- Smart ToDo -->
+  <!-- 1. Smart ToDo -->
   <div id="todo" class="content active">
-    <h2 class="section-title">Smart ToDo</h2>
+    <div class="section-title">
+      Smart ToDo
+      <span style="font-size:12px; color:#6b7280;">※ 期限の7日前, 3日前, 1日前に自動通知</span>
+    </div>
     <div class="input-group">
       <input type="text" id="todo-input" placeholder="タスク名" style="flex-grow: 2;">
       <input type="datetime-local" id="todo-date">
-      <button class="action-btn" onclick="addTodo()">追加</button>
+      <button class="action-btn gold-btn" onclick="addTodo()">追加</button>
     </div>
-
     <div class="todo-sub-header">📌 未完了のタスク</div>
     <ul id="todo-list-active"></ul>
-
-    <div class="todo-sub-header done-header">✅ 完了済みのタスク</div>
+    <div class="todo-sub-header" style="color: #9ca3af; border-top: 1px dashed #e5e7eb; padding-top: 20px;">✅ 完了済みのタスク</div>
     <ul id="todo-list-done"></ul>
   </div>
 
-  <!-- 備品管理 -->
+  <!-- 2. 備品管理 -->
   <div id="equipment" class="content">
-    <h2 class="section-title">備品リスト（エリア別）</h2>
-    <div class="sub-tabs" id="eq-tabs">
-      <!-- JSで生成 -->
+    <div class="section-title">
+      備品リスト
+      <button class="action-btn" style="font-size: 12px; padding: 8px 15px;" onclick="sendAllEqToLine()">📱 全エリアの備品をLINEに送信</button>
     </div>
+    <div class="sub-tabs" id="eq-tabs"></div>
     <div class="input-group">
       <input type="text" id="eq-input" placeholder="備品名">
-      <input type="number" id="eq-count" placeholder="個数" value="1" style="max-width: 80px;">
-      <button class="action-btn" onclick="addEq()">追加</button>
+      <input type="number" id="eq-count" placeholder="個数" value="1" style="max-width: 100px;">
+      <button class="action-btn gold-btn" onclick="addEq()">追加</button>
     </div>
     <ul id="eq-list"></ul>
   </div>
 
-  <!-- 買い物リスト -->
+  <!-- 3. 買い物リスト -->
   <div id="shopping" class="content">
-    <h2 class="section-title">買い物リスト ＆ 会計</h2>
+    <h2 class="section-title">買い物リスト ＆ カゴ</h2>
     <div class="input-group">
-      <input type="text" id="shop-input" placeholder="買うもの">
+      <input type="text" id="shop-input" placeholder="買うもの" style="flex-grow: 2;">
+      <input type="number" id="shop-qty" placeholder="個数" value="1" style="max-width: 80px;">
       <input type="number" id="shop-price" placeholder="予定価格(任意)" style="max-width: 120px;">
-      <button class="action-btn" onclick="addShop()">追加</button>
+      <button class="action-btn gold-btn" onclick="addShop()">追加</button>
     </div>
-    <ul id="shop-list" style="margin-bottom: 20px;"></ul>
     
-    <div style="background: #eaf2f8; padding: 20px; border-radius: 8px;">
-      <p style="margin-top: 0; font-weight: bold; text-align: center;">チェックした項目を家計簿に記録</p>
-      
-      <!-- レジ風合計表示 -->
-      <div class="register-display">
-        TOTAL <span id="shop-total">¥ 0</span>
+    <div class="shop-area">
+      <!-- 買うものリスト -->
+      <div class="shop-box">
+        <h3>📋 買うものリスト</h3>
+        <ul id="shop-list-pending" style="min-height: 100px;"></ul>
       </div>
-
-      <div style="text-align: center;">
-        <select id="shop-payment" style="margin-bottom: 15px; width: 200px; font-size: 16px;">
-          <option value="現金">現金</option>
-          <option value="クレジットカード">クレジットカード</option>
-          <option value="PayPay">PayPay</option>
-        </select><br>
-        <button class="action-btn" style="background: #27ae60; width: 100%; font-size: 16px; padding: 12px;" onclick="checkoutShopping()">買い物完了 ＆ 家計簿へ記録</button>
+      <!-- カゴの中身 -->
+      <div class="shop-box" style="background: #fdfaf3; border-color: #f6e8c3;">
+        <h3>🛒 カゴの中身</h3>
+        <ul id="shop-list-cart" style="min-height: 100px;"></ul>
+        
+        <!-- 会計エリア (リストが空になったら表示) -->
+        <div id="checkout-area" style="display: none; margin-top: 20px; padding-top: 20px; border-top: 2px dashed #d1d5db; text-align: center;">
+          <div style="font-size: 20px; font-weight: bold; color: var(--primary); margin-bottom: 15px;">
+            TOTAL <span id="shop-total" style="color: var(--gold); font-size: 28px;">¥ 0</span>
+          </div>
+          <select id="shop-payment" style="margin-bottom: 15px; width: 100%; font-size: 16px; padding: 10px;">
+            <option value="現金">現金</option>
+            <option value="クレジットカード">クレジットカード</option>
+            <option value="PayPay">PayPay</option>
+          </select>
+          <button class="action-btn" style="width: 100%; font-size: 16px; padding: 15px;" onclick="checkoutShopping()">買い物を完了する ＆ 家計簿へ</button>
+        </div>
       </div>
     </div>
   </div>
 
-  <!-- 🏦 家計簿 -->
+  <!-- 4. 家計簿 -->
   <div id="finance" class="content">
-    <h2 class="section-title">家計簿帳</h2>
+    <div class="section-title">
+      家計簿帳
+      <button class="action-btn" style="font-size: 12px; padding: 8px 15px;" onclick="sendMonthlyReport()">📱 当月の収支をLINEに送信</button>
+    </div>
+    
+    <!-- カウンター -->
+    <div class="finance-dash">
+      <div class="fin-card">
+        <h4>当月 収入</h4>
+        <div class="amount income" id="dash-income">¥ 0</div>
+      </div>
+      <div class="fin-card">
+        <h4>当月 支出</h4>
+        <div class="amount expense" id="dash-expense">¥ 0</div>
+      </div>
+      <div class="fin-card" style="background: var(--primary);">
+        <h4 style="color: var(--gold);">総合残高</h4>
+        <div class="amount" id="dash-total" style="color: #fff;">¥ 0</div>
+      </div>
+    </div>
+
     <div class="input-group">
-      <select id="fin-type" style="max-width: 80px;">
+      <select id="fin-type" style="max-width: 100px;">
         <option value="expense">支出</option>
         <option value="income">収入</option>
       </select>
       <input type="date" id="fin-date">
       <input type="text" id="fin-name" placeholder="項目名">
-      <select id="fin-method" style="max-width: 120px;">
+      <select id="fin-method" style="max-width: 140px;">
         <option value="-">支払方法(任意)</option>
         <option value="現金">現金</option>
         <option value="クレジットカード">クレジットカード</option>
@@ -178,97 +224,88 @@
         <option value="銀行振込">銀行振込</option>
       </select>
       <input type="number" id="fin-amount" placeholder="金額" style="max-width: 120px;">
-      <button class="action-btn" onclick="addFinance()">記帳</button>
+      <button class="action-btn gold-btn" onclick="addFinance()">記帳</button>
     </div>
 
-    <div class="passbook-container">
-      <p style="margin-top:0; font-weight:bold; color:#7f8c8d; text-align:right;">総合残高: <span id="pb-total" style="color:#2c3e50; font-size:20px;">0</span> 円</p>
-      <table class="passbook-table">
+    <div style="background: #fff; padding: 20px; border-radius: 8px; border: 1px solid var(--border); overflow-x: auto;">
+      <table class="premium-table">
         <thead>
           <tr>
             <th width="15%">日付</th>
             <th width="25%">摘要</th>
             <th width="15%">支払方法</th>
-            <th width="15%">お支払金額</th>
-            <th width="15%">お預り金額</th>
-            <th width="15%">差引残高</th>
+            <th width="15%">お支払</th>
+            <th width="15%">お預り</th>
+            <th width="15%">残高</th>
           </tr>
         </thead>
         <tbody id="finance-list"></tbody>
       </table>
-      <p style="font-size: 12px; color: #95a5a6; margin-top: 10px;">※ 行をクリックすると修正・削除ができます</p>
     </div>
   </div>
 
-  <!-- 📄 レポート -->
+  <!-- 5. レポート -->
   <div id="report" class="content">
     <h2 class="section-title">レポート作成支援</h2>
-    <button class="action-btn" style="margin-bottom: 20px; background: #8e44ad;" onclick="window.open('https://notebooklm.google.com/', '_blank')">NotebookLM を開く ↗</button>
-    <div style="display: flex; justify-content: space-between; margin-bottom: 5px;">
-      <strong>下書きメモ</strong>
-      <span style="font-size: 12px; color: #7f8c8d;"><span id="char-count">0</span> 文字</span>
+    <div class="input-group" style="background: transparent; border: none; padding: 0;">
+      <button class="action-btn" style="background: #3b82f6; border-color: #3b82f6;" onclick="window.open('https://notebooklm.google.com/', '_blank')">NotebookLM を開く ↗</button>
     </div>
-    <textarea id="report-memo" rows="6" oninput="document.getElementById('char-count').innerText = this.value.length;" placeholder="ここに構成や文章を入力..."></textarea>
     
     <div style="margin-top: 20px;">
-      <strong>参考文献 ジェネレーター</strong>
-      <textarea id="ref-input" rows="3" placeholder="URLを改行で複数貼り付け" style="margin-top: 5px;"></textarea>
-      <button class="action-btn" style="margin-top: 10px;" onclick="generateRefs()">参考文献形式に変換</button>
-      <textarea id="ref-output" rows="3" style="margin-top: 10px; background: #ecf0f1;" readonly placeholder="結果がここに出ます"></textarea>
+      <div style="display: flex; justify-content: space-between; margin-bottom: 5px;">
+        <strong style="color: var(--primary);">下書きメモ ＆ 誤字チェック</strong>
+        <span style="font-size: 13px; color: var(--text-light);"><span id="char-count">0</span> 文字</span>
+      </div>
+      <textarea id="report-memo" rows="8" oninput="checkTypos(this)" placeholder="ここに構成や文章を入力..."></textarea>
+      <div id="typo-alert" class="typo-warning"></div>
+    </div>
+    
+    <div style="margin-top: 30px; padding-top: 20px; border-top: 1px solid var(--border);">
+      <strong style="color: var(--primary);">参考文献 ジェネレーター</strong>
+      <textarea id="ref-input" rows="3" placeholder="URLを改行で複数貼り付け" style="margin-top: 10px;"></textarea>
+      <button class="action-btn gold-btn" style="margin-top: 10px;" onclick="generateRefs()">形式変換</button>
+      <textarea id="ref-output" rows="3" style="margin-top: 10px; background: #f9fafb;" readonly placeholder="結果がここに出ます"></textarea>
     </div>
   </div>
 
-  <!-- 🎓 リンク集 -->
+  <!-- 6. リンク集 -->
   <div id="links" class="content">
     <h2 class="section-title">ランチャー（リンク集）</h2>
     <div class="input-group">
       <input type="text" id="link-name" placeholder="サイト名">
       <input type="text" id="link-url" placeholder="URL (https://...)">
-      <button class="action-btn" onclick="addLink()">追加</button>
+      <button class="action-btn gold-btn" onclick="addLink()">追加</button>
     </div>
-    <p style="font-size: 12px; color: #7f8c8d;">※ ⣿ を掴んでドラッグ＆ドロップで並び替えできます</p>
     <ul id="links-list"></ul>
   </div>
 
-  <!-- ⚙️ 設定 -->
+  <!-- ⚙️ 設定 (バックアップ機能追加) -->
   <div id="settings" class="content">
-    <h2 class="section-title">システム設定</h2>
-    <div style="margin-bottom: 20px; background: #fdf5f5; padding: 15px; border-radius: 8px; border-left: 5px solid #e74c3c;">
-      <h3 style="margin-top: 0; font-size: 16px; color: #c0392b;">LINE通知の連携テスト</h3>
-      <p style="font-size: 14px; margin-bottom: 10px;">Google Apps Script (GAS) の「ウェブアプリのURL」を入力してください。</p>
-      
+    <h2 class="section-title">システム設定 ＆ データ保護</h2>
+    
+    <div style="margin-bottom: 30px; background: #fdfaf3; padding: 20px; border-radius: 8px; border: 1px solid #f6e8c3;">
+      <h3 style="margin-top: 0; font-size: 16px; color: #9a3412;">LINE通知の設定</h3>
       <input type="text" id="setting-gas-url" placeholder="https://script.google.com/macros/s/..." style="width: 100%; box-sizing: border-box; margin-bottom: 15px;">
-      
-      <div style="display: flex; gap: 10px; flex-wrap: wrap;">
-        <button class="action-btn" onclick="saveSettings()">URLを保存する</button>
-        <button class="action-btn" style="background: #f39c12;" onclick="testLineNotify()">通知をテスト送信 🚀</button>
+      <div style="display: flex; gap: 10px;">
+        <button class="action-btn" onclick="saveSettings()">URLを保存</button>
+        <button class="action-btn gold-btn" onclick="testLineNotify()">通知をテスト送信 🚀</button>
       </div>
     </div>
-    
-    <div style="background: #ecf0f1; padding: 15px; border-radius: 8px; font-size: 13px; color: #2c3e50;">
-      <strong>💡 テスト送信してもLINEが来ない場合のチェックリスト</strong>
-      <ol style="margin-bottom: 0; padding-left: 20px;">
-        <li>GASのスクリプト側でLINE Notifyのトークンが正しく設定されているか</li>
-        <li>GASのコードを修正した際、<strong>必ず「新しいデプロイ」としてバージョン更新</strong>しているか（上書き保存だけでは反映されません）</li>
-        <li>URLは「/exec」で終わる正しいウェブアプリURLか</li>
-      </ol>
-    </div>
-  </div>
 
-  <!-- ToDo詳細モーダル -->
-  <div class="modal-overlay" id="todo-modal">
-    <div class="modal-content">
-      <h3 id="modal-title" style="margin-top:0;"></h3>
-      <textarea id="modal-memo" rows="5" placeholder="詳細メモ..."></textarea>
-      <div style="display: flex; justify-content: flex-end; gap: 10px; margin-top: 15px;">
-        <button class="action-btn" style="background: #95a5a6;" onclick="closeModal()">閉じる</button>
-        <button class="action-btn" onclick="saveTodoMemo()">保存</button>
+    <div style="background: #f9fafb; padding: 20px; border-radius: 8px; border: 1px solid var(--border);">
+      <h3 style="margin-top: 0; font-size: 16px; color: var(--primary);">データのバックアップ</h3>
+      <p style="font-size: 13px; color: var(--text-light); margin-bottom: 15px;">端末を変えたり、ブラウザの履歴を消去してもデータを引き継げるように、データを保存・復元できます。</p>
+      <div style="display: flex; gap: 10px;">
+        <button class="action-btn" style="background: var(--success); border-color: var(--success);" onclick="exportData()">データを書き出す</button>
+        <button class="action-btn" style="background: var(--danger); border-color: var(--danger);" onclick="importData()">データを読み込む</button>
       </div>
     </div>
   </div>
 
   <script>
-    // 共通: タブ切り替え
+    // ==========================================
+    // 共通・初期設定
+    // ==========================================
     function switchTab(tabId, btn) {
       document.querySelectorAll('.content').forEach(el => el.classList.remove('active'));
       document.querySelectorAll('.tab-btn').forEach(el => el.classList.remove('active'));
@@ -276,8 +313,7 @@
       if(btn) btn.classList.add('active');
     }
 
-    // --- State & LocalStorage ---
-    const DB_KEY = 'myportal_data';
+    const DB_KEY = 'myportal_premium_data';
     let appData = JSON.parse(localStorage.getItem(DB_KEY)) || {
       todos: [],
       equipments: { 'リビング':[], 'トイレ':[], '洗面所':[], 'キッチン':[], '風呂':[] },
@@ -287,346 +323,342 @@
         { id: 'l1', name: '大学ポータル', url: 'https://example.com' },
         { id: 'l2', name: 'Webシラバス', url: 'https://example.com' }
       ],
-      gasUrl: 'https://script.google.com/macros/s/AKfycbzWSTMccF34lDqPkjTgsZf-UCMq6ejYlAROxmEihd4bzzHkTmKHwg22tG6eocIlBuJUhA/exec' // 初期URL
+      gasUrl: ''
     };
-    
-    // データ互換性（以前のバージョンでgasUrlが存在しない場合）
-    if (!appData.gasUrl) {
-      appData.gasUrl = 'https://script.google.com/macros/s/AKfycbzWSTMccF34lDqPkjTgsZf-UCMq6ejYlAROxmEihd4bzzHkTmKHwg22tG6eocIlBuJUhA/exec';
-    }
-
     function saveData() { localStorage.setItem(DB_KEY, JSON.stringify(appData)); }
 
-    // 共通: LINE通知 (動的なGAS_URLを使用)
     function sendLineNotify(message) {
       if(!appData.gasUrl) return;
       fetch(appData.gasUrl, {
-        method: 'POST',
-        mode: 'no-cors',
+        method: 'POST', mode: 'no-cors',
         headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
         body: 'message=' + encodeURIComponent(message)
-      }).catch(e => console.log('LINE通知送信エラー:', e));
+      }).catch(e => console.log('LINEエラー:', e));
     }
 
     // ==========================================
-    // ⚙️ 設定
+    // 1. ToDo (リマインド通知機能)
     // ==========================================
-    function initSettings() {
-      document.getElementById('setting-gas-url').value = appData.gasUrl || '';
-    }
+    function checkTodoReminders() {
+      const now = new Date();
+      let notifyMessages = [];
 
-    function saveSettings() {
-      const url = document.getElementById('setting-gas-url').value.trim();
-      appData.gasUrl = url;
-      saveData();
-      alert('設定を保存しました！');
-    }
+      appData.todos.forEach(todo => {
+        if(todo.done || !todo.date) return;
+        const due = new Date(todo.date);
+        const diffDays = (due - now) / (1000 * 60 * 60 * 24);
 
-    function testLineNotify() {
-      const url = document.getElementById('setting-gas-url').value.trim();
-      if (!url) {
-        alert('GASのURLが入力されていません！');
-        return;
-      }
-      
-      // 送信前に一応保存しておく
-      appData.gasUrl = url;
-      saveData();
-
-      alert('テスト通知を送信します。OKを押した後、数秒待ってからLINEを確認してください。');
-
-      fetch(url, {
-        method: 'POST',
-        mode: 'no-cors',
-        headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
-        body: 'message=' + encodeURIComponent('📱【テスト完了】\nMY PORTALからのテスト通信に成功しました！🎉')
-      }).then(() => {
-        alert('🌐 送信リクエストが完了しました。\n\n※これでLINEが鳴らない場合は、URLが間違っているか、GAS側の設定に問題がある可能性が高いです。\n「新しいデプロイ」ができているかご確認ください。');
-      }).catch(e => {
-        alert('送信エラー: ネットワーク接続等を確認してください。\n' + e.message);
+        if (diffDays > 0) {
+          // 7日前(6~7)、3日前(2~3)、1日前(0~1)
+          if (diffDays <= 7 && diffDays > 6 && !todo.notified7) {
+            notifyMessages.push(`・${todo.text} (期限: あと7日)`);
+            todo.notified7 = true;
+          } else if (diffDays <= 3 && diffDays > 2 && !todo.notified3) {
+            notifyMessages.push(`・${todo.text} (期限: あと3日)`);
+            todo.notified3 = true;
+          } else if (diffDays <= 1 && diffDays > 0 && !todo.notified1) {
+            notifyMessages.push(`・${todo.text} (期限: 明日！)`);
+            todo.notified1 = true;
+          }
+        }
       });
+      if(notifyMessages.length > 0) {
+        sendLineNotify(`📝 【ToDoリマインド】\n期限が近づいているタスクがあります！\n\n${notifyMessages.join('\n')}`);
+        saveData();
+      }
     }
-
-
-    // ==========================================
-    // 📝 Smart ToDo
-    // ==========================================
-    let currentTodoId = null;
 
     function renderTodos() {
       const activeList = document.getElementById('todo-list-active');
       const doneList = document.getElementById('todo-list-done');
-      activeList.innerHTML = '';
-      doneList.innerHTML = '';
+      activeList.innerHTML = ''; doneList.innerHTML = '';
       const now = new Date();
 
       appData.todos.forEach(todo => {
         let cls = '';
-        let priorityLabel = '低';
-        let isUrgent = false;
-        let displayDateText = '';
-
-        if (todo.date) {
-          const due = new Date(todo.date);
-          const diffHrs = (due - now) / (1000 * 60 * 60);
-          
-          if (diffHrs <= 120) { 
-            cls = 'priority-high'; priorityLabel = '最高'; isUrgent = true;
-          } else if (diffHrs <= 168) { 
-            cls = 'priority-mid'; priorityLabel = '中'; isUrgent = true;
-          }
-          
-          if (isUrgent && !todo.notified && !todo.done) {
-            sendLineNotify(`⚠️【期限間近タスク】\n${todo.text}\n期限: ${todo.date.replace('T', ' ')}`);
-            todo.notified = true;
-            saveData();
-          }
-          displayDateText = todo.date.replace('T', ' ');
+        if (todo.date && !todo.done) {
+          const diffDays = (new Date(todo.date) - now) / (1000 * 60 * 60 * 24);
+          if (diffDays <= 1) cls = 'priority-high';
+          else if (diffDays <= 3) cls = 'priority-mid';
         }
 
-        const itemHtml = `
-          <li class="${todo.done ? '' : cls}" style="${todo.done ? 'opacity:0.6; background:#f0f3f4;' : ''}">
-            <input type="checkbox" ${todo.done ? 'checked' : ''} onchange="toggleTodo('${todo.id}')" style="margin-right:10px;">
-            <div class="todo-item" onclick="openModal('${todo.id}')">
-              <span style="${todo.done ? 'text-decoration:line-through; color:#7f8c8d;' : ''}">${todo.text}</span>
-              ${todo.date ? `<span style="font-size:12px; color:#7f8c8d; margin-left:10px;">⏳ ${displayDateText} ${!todo.done ? '[' + priorityLabel + ']' : ''}</span>` : ''}
+        const dateStr = todo.date ? todo.date.replace('T', ' ') : '';
+        const html = `
+          <li class="${todo.done ? '' : cls}" style="${todo.done ? 'opacity:0.6; background:#f9fafb;' : ''}">
+            <div style="display:flex; align-items:center; gap:10px; flex-grow:1; cursor:pointer;" onclick="toggleTodo('${todo.id}')">
+              <input type="checkbox" ${todo.done ? 'checked' : ''} style="transform: scale(1.2);">
+              <span style="${todo.done ? 'text-decoration:line-through; color:#9ca3af;' : 'font-weight:bold;'}">${todo.text}</span>
+              ${dateStr ? `<span style="font-size:12px; color:#6b7280;">⏳ ${dateStr}</span>` : ''}
             </div>
             <button class="delete-btn" onclick="deleteTodo('${todo.id}')">削除</button>
-          </li>
-        `;
-
-        if (todo.done) {
-          doneList.innerHTML += itemHtml;
-        } else {
-          activeList.innerHTML += itemHtml;
-        }
+          </li>`;
+        if (todo.done) doneList.innerHTML += html;
+        else activeList.innerHTML += html;
       });
-
-      if (activeList.innerHTML === '') {
-        activeList.innerHTML = '<li style="color:#95a5a6; font-size:13px; justify-content:center; background:none; border:none;">未完了のタスクはありません🎉</li>';
-      }
-      if (doneList.innerHTML === '') {
-        doneList.innerHTML = '<li style="color:#95a5a6; font-size:13px; justify-content:center; background:none; border:none;">完了済みのタスクはありません</li>';
-      }
+      checkTodoReminders();
     }
-
     function addTodo() {
       const text = document.getElementById('todo-input').value;
       const date = document.getElementById('todo-date').value;
       if (!text) return;
-      appData.todos.push({ id: Date.now().toString(), text, date, detail: '', done: false, notified: false });
+      appData.todos.push({ id: Date.now().toString(), text, date, done: false });
       document.getElementById('todo-input').value = '';
-      document.getElementById('todo-date').value = '';
       saveData(); renderTodos();
     }
-    function toggleTodo(id) {
-      const t = appData.todos.find(x => x.id === id);
-      if(t) { t.done = !t.done; saveData(); renderTodos(); }
-    }
-    function deleteTodo(id) {
-      appData.todos = appData.todos.filter(x => x.id !== id);
-      saveData(); renderTodos();
-    }
-    function openModal(id) {
-      const t = appData.todos.find(x => x.id === id);
-      currentTodoId = id;
-      document.getElementById('modal-title').innerText = t.text;
-      document.getElementById('modal-memo').value = t.detail || '';
-      document.getElementById('todo-modal').style.display = 'flex';
-    }
-    function closeModal() { document.getElementById('todo-modal').style.display = 'none'; }
-    function saveTodoMemo() {
-      const t = appData.todos.find(x => x.id === currentTodoId);
-      if(t) { t.detail = document.getElementById('modal-memo').value; saveData(); }
-      closeModal();
-    }
+    function toggleTodo(id) { const t = appData.todos.find(x => x.id === id); if(t){ t.done = !t.done; saveData(); renderTodos(); } }
+    function deleteTodo(id) { appData.todos = appData.todos.filter(x => x.id !== id); saveData(); renderTodos(); }
 
     // ==========================================
-    // 🛒 備品管理
+    // 2. 備品管理 (LINEまとめ送信機能)
     // ==========================================
-    const areas = ['リビング', 'トイレ', '洗面所', 'キッチン', '風呂'];
     let currentArea = 'リビング';
-
     function initEqTabs() {
-      const tabContainer = document.getElementById('eq-tabs');
-      tabContainer.innerHTML = areas.map(area => 
-        `<button class="sub-tab-btn ${area===currentArea?'active':''}" onclick="changeEqArea('${area}')">${area}</button>`
+      document.getElementById('eq-tabs').innerHTML = Object.keys(appData.equipments).map(area => 
+        `<button class="sub-tab-btn ${area===currentArea?'active':''}" onclick="currentArea='${area}'; initEqTabs(); renderEq();">${area}</button>`
       ).join('');
-      renderEq();
     }
-    function changeEqArea(area) { currentArea = area; initEqTabs(); }
-
     function renderEq() {
       const list = document.getElementById('eq-list');
       list.innerHTML = '';
       (appData.equipments[currentArea] || []).forEach(eq => {
         list.innerHTML += `
           <li>
-            <span>${eq.name}</span>
-            <div style="display:flex; align-items:center; gap:10px;">
-              <button onclick="updateEq('${eq.id}', -1)" style="padding:2px 8px;">-</button>
-              <strong>${eq.count}</strong>
-              <button onclick="updateEq('${eq.id}', 1)" style="padding:2px 8px;">+</button>
+            <span style="font-weight:bold;">${eq.name}</span>
+            <div style="display:flex; align-items:center; gap:15px;">
+              <button onclick="updateEq('${eq.id}', -1)" style="padding:4px 12px; border:1px solid #ccc; background:#fff; border-radius:4px; cursor:pointer;">-</button>
+              <strong style="width:20px; text-align:center;">${eq.count}</strong>
+              <button onclick="updateEq('${eq.id}', 1)" style="padding:4px 12px; border:1px solid #ccc; background:#fff; border-radius:4px; cursor:pointer;">+</button>
               <button class="delete-btn" onclick="deleteEq('${eq.id}')">削除</button>
             </div>
-          </li>
-        `;
+          </li>`;
       });
     }
-
     function addEq() {
       const name = document.getElementById('eq-input').value;
       const count = parseInt(document.getElementById('eq-count').value) || 1;
       if(!name) return;
       appData.equipments[currentArea].push({ id: Date.now().toString(), name, count });
-      document.getElementById('eq-input').value = '';
-      saveData(); renderEq();
+      document.getElementById('eq-input').value = ''; saveData(); renderEq();
     }
-    
     function updateEq(id, change) {
       let eq = appData.equipments[currentArea].find(x => x.id === id);
       if(eq) {
         eq.count += change;
         if(eq.count <= 0) {
           eq.count = 0;
-          if(!appData.shopping.find(x => x.name === eq.name && !x.done)) {
-            appData.shopping.push({ id: Date.now().toString(), name: eq.name, price: 0, checked: false });
-            sendLineNotify(`🛒【買い出しアラート】\n${currentArea}の「${eq.name}」が0になりました！\n買い物リストに追加しました。`);
+          if(!appData.shopping.find(x => x.name === eq.name && !x.checked)) {
+            // 買い物リストへ自動追加
+            appData.shopping.push({ id: Date.now().toString(), name: eq.name, qty: 1, price: 0, checked: false });
+            sendLineNotify(`🛒【備品切れアラート】\n${currentArea}の「${eq.name}」が0になりました！買い物リストに追加しました。`);
           }
         }
         saveData(); renderEq(); renderShopping();
       }
     }
-    function deleteEq(id) {
-      appData.equipments[currentArea] = appData.equipments[currentArea].filter(x => x.id !== id);
-      saveData(); renderEq();
+    function deleteEq(id) { appData.equipments[currentArea] = appData.equipments[currentArea].filter(x => x.id !== id); saveData(); renderEq(); }
+    
+    function sendAllEqToLine() {
+      let msg = "📦 【備品リスト一覧】\n";
+      for (const [area, items] of Object.entries(appData.equipments)) {
+        if(items.length > 0) {
+          msg += `\n[${area}]\n` + items.map(i => `・${i.name}: ${i.count}個`).join('\n') + '\n';
+        }
+      }
+      sendLineNotify(msg);
+      alert('LINEに備品リストを送信しました！');
     }
 
     // ==========================================
-    // 🛍️ 買い物 ＆ 家計簿連携
+    // 3. 買い物リスト (個数・カゴ分離)
     // ==========================================
-    function updateShopTotal() {
-      const total = appData.shopping.filter(x => x.checked).reduce((sum, item) => sum + (item.price || 0), 0);
-      document.getElementById('shop-total').innerText = '¥ ' + total.toLocaleString();
-    }
-
     function renderShopping() {
-      const list = document.getElementById('shop-list');
-      list.innerHTML = '';
-      appData.shopping.forEach(item => {
-        list.innerHTML += `
-          <li>
-            <div style="display:flex; align-items:center; gap:10px;">
-              <input type="checkbox" ${item.checked ? 'checked' : ''} onchange="toggleShop('${item.id}')">
-              <span>${item.name}</span>
-            </div>
-            <div>
-              <input type="number" value="${item.price}" onchange="updateShopPrice('${item.id}', this.value)" style="width:80px; padding:5px; margin-right:10px;" placeholder="金額">円
-              <button class="delete-btn" onclick="deleteShop('${item.id}')">削除</button>
-            </div>
-          </li>
-        `;
-      });
-      updateShopTotal();
-    }
+      const pendingList = document.getElementById('shop-list-pending');
+      const cartList = document.getElementById('shop-list-cart');
+      pendingList.innerHTML = ''; cartList.innerHTML = '';
+      
+      let total = 0;
+      let pendingCount = 0;
 
+      appData.shopping.forEach(item => {
+        const html = `
+          <li style="border-left: 4px solid ${item.checked ? 'var(--success)' : 'var(--gold)'};">
+            <div style="display:flex; align-items:center; gap:10px; flex-grow:1;">
+              <input type="checkbox" ${item.checked ? 'checked' : ''} onchange="toggleShop('${item.id}')" style="transform:scale(1.3);">
+              <span style="${item.checked ? 'text-decoration:line-through; color:#9ca3af;' : 'font-weight:bold;'}">${item.name}</span>
+              <span style="font-size:12px; color:#6b7280; background:#f3f4f6; padding:2px 6px; border-radius:4px;">${item.qty || 1}個</span>
+            </div>
+            <div style="display:flex; align-items:center; gap:5px;">
+              <input type="number" value="${item.price}" onchange="updateShopPrice('${item.id}', this.value)" style="width:70px; padding:6px;" placeholder="金額">円
+              <button class="delete-btn" onclick="deleteShop('${item.id}')">×</button>
+            </div>
+          </li>`;
+        
+        if (item.checked) {
+          cartList.innerHTML += html;
+          total += (item.price || 0) * (item.qty || 1);
+        } else {
+          pendingList.innerHTML += html;
+          pendingCount++;
+        }
+      });
+
+      document.getElementById('shop-total').innerText = '¥ ' + total.toLocaleString();
+
+      // リストが空でカゴに中身があれば会計ボタンを表示
+      const checkoutArea = document.getElementById('checkout-area');
+      if(pendingCount === 0 && appData.shopping.length > 0) {
+        checkoutArea.style.display = 'block';
+      } else {
+        checkoutArea.style.display = 'none';
+      }
+    }
+    
     function addShop() {
       const name = document.getElementById('shop-input').value;
-      const price = document.getElementById('shop-price').value || 0;
+      const qty = parseInt(document.getElementById('shop-qty').value) || 1;
+      const price = parseInt(document.getElementById('shop-price').value) || 0;
       if(!name) return;
-      appData.shopping.push({ id: Date.now().toString(), name, price: parseInt(price), checked: false });
-      document.getElementById('shop-input').value = ''; document.getElementById('shop-price').value = '';
+      appData.shopping.push({ id: Date.now().toString(), name, qty, price, checked: false });
+      document.getElementById('shop-input').value = ''; 
+      document.getElementById('shop-qty').value = '1';
+      document.getElementById('shop-price').value = '';
       saveData(); renderShopping();
     }
-    function toggleShop(id) {
-      let item = appData.shopping.find(x => x.id === id);
-      if(item) { item.checked = !item.checked; saveData(); updateShopTotal(); }
-    }
-    function updateShopPrice(id, val) {
-      let item = appData.shopping.find(x => x.id === id);
-      if(item) { item.price = parseInt(val) || 0; saveData(); updateShopTotal(); }
-    }
-    function deleteShop(id) {
-      appData.shopping = appData.shopping.filter(x => x.id !== id);
-      saveData(); renderShopping();
-    }
+    function toggleShop(id) { let item = appData.shopping.find(x => x.id === id); if(item) { item.checked = !item.checked; saveData(); renderShopping(); } }
+    function updateShopPrice(id, val) { let item = appData.shopping.find(x => x.id === id); if(item) { item.price = parseInt(val) || 0; saveData(); renderShopping(); } }
+    function deleteShop(id) { appData.shopping = appData.shopping.filter(x => x.id !== id); saveData(); renderShopping(); }
 
     function checkoutShopping() {
-      const checkedItems = appData.shopping.filter(x => x.checked);
-      if(checkedItems.length === 0) { alert('家計簿に記録する項目をチェックしてください！'); return; }
-      
-      let total = checkedItems.reduce((sum, item) => sum + item.price, 0);
+      const cartItems = appData.shopping.filter(x => x.checked);
+      let total = cartItems.reduce((sum, item) => sum + (item.price * (item.qty || 1)), 0);
       const method = document.getElementById('shop-payment').value;
-      const names = checkedItems.map(x => x.name).join(' / ');
+      const names = cartItems.map(x => `${x.name}(${x.qty || 1})`).join(' / ');
 
       const today = new Date().toISOString().split('T')[0];
-      appData.finance.push({
-        id: Date.now().toString(), date: today, type: 'expense', name: `買物: ${names}`, method: method, amount: total
-      });
+      appData.finance.push({ id: Date.now().toString(), date: today, type: 'expense', name: `買物: ${names}`, method: method, amount: total });
       
-      appData.shopping = appData.shopping.filter(x => !x.checked);
+      appData.shopping = appData.shopping.filter(x => !x.checked); // カゴを空に
       saveData(); renderShopping(); renderFinance(); switchTab('finance');
-      sendLineNotify(`🏦【家計簿記録】\nお買い物完了！\n金額: ${total}円\n支払: ${method}\n内容: ${names}`);
+      sendLineNotify(`🏦【家計簿記録】\nお買い物完了！\n金額: ${total.toLocaleString()}円\n支払: ${method}\n内容: ${names}`);
     }
 
     // ==========================================
-    // 🏦 通帳風 家計簿
+    // 4. 家計簿 (ダッシュボード・月末通知)
     // ==========================================
+    function checkMonthlyFinanceReport() {
+      const now = new Date();
+      // 明日の日付が1日なら、今日は月末日
+      const tomorrow = new Date(now.getTime() + 24 * 60 * 60 * 1000);
+      const todayStr = now.toISOString().split('T')[0];
+      
+      if (tomorrow.getDate() === 1 && appData.lastFinanceReport !== todayStr) {
+        sendMonthlyReport();
+        appData.lastFinanceReport = todayStr;
+        saveData();
+      }
+    }
+
+    function sendMonthlyReport() {
+      const now = new Date();
+      const currentMonth = `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, '0')}`;
+      let mInc = 0, mExp = 0;
+      
+      appData.finance.forEach(f => {
+        if(f.date.startsWith(currentMonth)) {
+          if(f.type === 'income') mInc += f.amount; else mExp += f.amount;
+        }
+      });
+      
+      sendLineNotify(`📊【${now.getMonth() + 1}月度 収支レポート】\n\n・今月の収入: ${mInc.toLocaleString()}円\n・今月の支出: ${mExp.toLocaleString()}円\n・収支差額: ${(mInc - mExp).toLocaleString()}円`);
+      alert('LINEに収支レポートを送信しました！');
+    }
+
     function renderFinance() {
       const list = document.getElementById('finance-list');
       list.innerHTML = '';
-      
       appData.finance.sort((a, b) => new Date(a.date) - new Date(b.date));
       
-      let balance = 0;
-      appData.finance.forEach(f => {
-        if(f.type === 'income') balance += f.amount;
-        else balance -= f.amount;
+      let balance = 0, monthIncome = 0, monthExpense = 0;
+      const currentMonth = new Date().toISOString().slice(0, 7); // YYYY-MM
 
-        const incomeStr = f.type === 'income' ? `<span class="pb-income">${f.amount.toLocaleString()}</span>` : '';
-        const expenseStr = f.type === 'expense' ? `<span class="pb-expense">${f.amount.toLocaleString()}</span>` : '';
-        const methodStr = f.method && f.method !== '-' ? f.method : '';
+      appData.finance.forEach(f => {
+        if(f.type === 'income') {
+          balance += f.amount;
+          if(f.date.startsWith(currentMonth)) monthIncome += f.amount;
+        } else {
+          balance -= f.amount;
+          if(f.date.startsWith(currentMonth)) monthExpense += f.amount;
+        }
+
+        const incomeStr = f.type === 'income' ? `<span style="color:var(--success); font-weight:bold;">${f.amount.toLocaleString()}</span>` : '';
+        const expenseStr = f.type === 'expense' ? `<span style="color:var(--danger); font-weight:bold;">${f.amount.toLocaleString()}</span>` : '';
 
         list.innerHTML += `
-          <tr onclick="editFinance('${f.id}')">
+          <tr style="cursor:pointer;" onclick="if(confirm('この記録を削除しますか？')) deleteFinance('${f.id}')">
             <td>${f.date}</td>
-            <td>${f.name}</td>
-            <td>${methodStr}</td>
+            <td style="font-weight:bold; color:var(--primary);">${f.name}</td>
+            <td>${f.method === '-' ? '' : f.method}</td>
             <td>${expenseStr}</td>
             <td>${incomeStr}</td>
             <td><strong>${balance.toLocaleString()}</strong></td>
-          </tr>
-        `;
+          </tr>`;
       });
-      document.getElementById('pb-total').innerText = balance.toLocaleString();
-    }
 
+      // ダッシュボード更新
+      document.getElementById('dash-income').innerText = `¥ ${monthIncome.toLocaleString()}`;
+      document.getElementById('dash-expense').innerText = `¥ ${monthExpense.toLocaleString()}`;
+      document.getElementById('dash-total').innerText = `¥ ${balance.toLocaleString()}`;
+      
+      checkMonthlyFinanceReport();
+    }
+    
     function addFinance() {
       const type = document.getElementById('fin-type').value;
       const date = document.getElementById('fin-date').value || new Date().toISOString().split('T')[0];
       const name = document.getElementById('fin-name').value;
       const method = document.getElementById('fin-method').value;
       const amount = parseInt(document.getElementById('fin-amount').value);
-
       if(!name || !amount) return;
       appData.finance.push({ id: Date.now().toString(), type, date, name, method, amount });
-      
-      document.getElementById('fin-name').value = ''; 
-      document.getElementById('fin-amount').value = '';
-      document.getElementById('fin-method').value = '-';
+      document.getElementById('fin-name').value = ''; document.getElementById('fin-amount').value = '';
       saveData(); renderFinance();
     }
+    function deleteFinance(id) { appData.finance = appData.finance.filter(x => x.id !== id); saveData(); renderFinance(); }
 
-    function editFinance(id) {
-      if(confirm('この記録を削除してよろしいですか？（※修正する場合は削除後に再度入力してください）')) {
-        appData.finance = appData.finance.filter(x => x.id !== id);
-        saveData(); renderFinance();
+    // ==========================================
+    // 5. レポート (誤字チェッカー)
+    // ==========================================
+    function checkTypos(textarea) {
+      document.getElementById('char-count').innerText = textarea.value.length;
+      
+      const text = textarea.value;
+      const alertBox = document.getElementById('typo-alert');
+      let warnings = [];
+
+      // 簡易的な誤字・誤用辞書
+      const typoDict = [
+        { bad: "的を得る", good: "的を射る、当を得る" },
+        { bad: "シュミレーション", good: "シミュレーション" },
+        { bad: "コミニュケーション", good: "コミュニケーション" },
+        { bad: "汚名挽回", good: "汚名返上、名誉挽回" },
+        { bad: "見れる", good: "見られる（ら抜き言葉）" },
+        { bad: "食べれる", good: "食べられる（ら抜き言葉）" }
+      ];
+
+      typoDict.forEach(item => {
+        if(text.includes(item.bad)) {
+          warnings.push(`⚠️「<strong>${item.bad}</strong>」は誤用の可能性があります。（正：${item.good}）`);
+        }
+      });
+
+      if(warnings.length > 0) {
+        alertBox.innerHTML = warnings.join('<br>');
+        alertBox.style.display = 'block';
+      } else {
+        alertBox.style.display = 'none';
       }
     }
 
-    // ==========================================
-    // 📄 レポート & 🎓 リンク集 (D&D)
-    // ==========================================
     function generateRefs() {
       const urls = document.getElementById('ref-input').value.split('\n').filter(u => u.trim() !== '');
       const d = new Date();
@@ -635,36 +667,20 @@
       document.getElementById('ref-output').value = result;
     }
 
-    let draggedIndex = null;
-    
+    // ==========================================
+    // 6. リンク集
+    // ==========================================
     function renderLinks() {
       const list = document.getElementById('links-list');
       list.innerHTML = '';
-      appData.links.forEach((link, index) => {
-        const li = document.createElement('li');
-        li.draggable = true;
-        li.innerHTML = `
-          <div style="display:flex; align-items:center;">
-            <span class="drag-handle">⣿</span>
-            <a href="${link.url}" target="_blank" style="color:#3498db; font-weight:bold; text-decoration:none;">${link.name}</a>
-          </div>
-          <button class="delete-btn" onclick="deleteLink('${link.id}')">削除</button>
-        `;
-        
-        li.addEventListener('dragstart', () => { draggedIndex = index; });
-        li.addEventListener('dragover', (e) => { e.preventDefault(); li.classList.add('drag-over'); });
-        li.addEventListener('dragleave', () => li.classList.remove('drag-over'));
-        li.addEventListener('drop', () => {
-          li.classList.remove('drag-over');
-          const item = appData.links.splice(draggedIndex, 1)[0];
-          appData.links.splice(index, 0, item);
-          saveData(); renderLinks();
-        });
-        
-        list.appendChild(li);
+      appData.links.forEach(link => {
+        list.innerHTML += `
+          <li class="link-item">
+            <a href="${link.url}" target="_blank">🔗 ${link.name}</a>
+            <button class="delete-btn" onclick="deleteLink('${link.id}')">削除</button>
+          </li>`;
       });
     }
-
     function addLink() {
       const name = document.getElementById('link-name').value;
       const url = document.getElementById('link-url').value;
@@ -673,17 +689,61 @@
       document.getElementById('link-name').value = ''; document.getElementById('link-url').value = '';
       saveData(); renderLinks();
     }
-    function deleteLink(id) {
-      appData.links = appData.links.filter(x => x.id !== id);
-      saveData(); renderLinks();
+    function deleteLink(id) { appData.links = appData.links.filter(x => x.id !== id); saveData(); renderLinks(); }
+
+    // ==========================================
+    // ⚙️ 設定 ＆ バックアップ
+    // ==========================================
+    function saveSettings() {
+      appData.gasUrl = document.getElementById('setting-gas-url').value.trim();
+      saveData(); alert('URLを保存しました！');
+    }
+    function testLineNotify() {
+      saveSettings();
+      fetch(appData.gasUrl, {
+        method: 'POST', mode: 'no-cors',
+        headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
+        body: 'message=' + encodeURIComponent('📱【テスト完了】\nPremium Edition からの通信に成功しました！✨')
+      }).then(() => alert('送信リクエスト完了！LINEを確認してください。'));
+    }
+
+    function exportData() {
+      const dataStr = "data:text/json;charset=utf-8," + encodeURIComponent(JSON.stringify(appData));
+      const downloadAnchorNode = document.createElement('a');
+      downloadAnchorNode.setAttribute("href", dataStr);
+      downloadAnchorNode.setAttribute("download", "myportal_backup.json");
+      document.body.appendChild(downloadAnchorNode); // Firefox用
+      downloadAnchorNode.click();
+      downloadAnchorNode.remove();
+    }
+
+    function importData() {
+      const input = document.createElement('input');
+      input.type = 'file';
+      input.accept = 'application/json';
+      input.onchange = e => { 
+        const file = e.target.files[0];
+        const reader = new FileReader();
+        reader.onload = event => {
+          try {
+            appData = JSON.parse(event.target.result);
+            saveData();
+            alert('データの復元が完了しました。ページを再読み込みします。');
+            location.reload();
+          } catch(err) { alert('不正なファイルです。'); }
+        }
+        reader.readAsText(file);
+      }
+      input.click();
     }
 
     // 初期化
     window.onload = () => {
       document.getElementById('fin-date').value = new Date().toISOString().split('T')[0];
-      initSettings(); // 設定用URL読み込み
+      document.getElementById('setting-gas-url').value = appData.gasUrl || '';
       renderTodos();
       initEqTabs();
+      renderEq();
       renderShopping();
       renderFinance();
       renderLinks();
