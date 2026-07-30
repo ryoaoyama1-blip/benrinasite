@@ -131,6 +131,32 @@
     .link-item { padding: 20px; font-size: 16px; }
     .link-item a { color: var(--primary); text-decoration: none; font-weight: bold; display: flex; align-items: center; gap: 10px; width: 100%; }
     .typo-warning { color: var(--danger); font-size: 15px; margin-top: 15px; background: #fef2f2; padding: 15px 20px; border-radius: 8px; border: 2px solid #fca5a5; display: none; line-height: 1.6; font-weight: bold; }
+    
+    /* =======================================
+       📱 スマホ用カレンダー最適化（コンパクト化）
+       ======================================= */
+    @media(max-width: 768px) {
+      .cal-cell {
+        min-height: 60px !important;
+        padding: 4px 2px !important;
+        display: block !important; 
+      }
+      .cal-date {
+        text-align: center;
+        font-size: 12px;
+        margin-bottom: 3px;
+      }
+      .event-badge {
+        display: inline-block !important;
+        width: 6px !important;
+        height: 6px !important;
+        padding: 0 !important;
+        margin: 1px 2px !important;
+        border-radius: 50% !important;
+        font-size: 0 !important;
+        overflow: hidden;
+      }
+    }
   </style>
 </head>
 <body>
