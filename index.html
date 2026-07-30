@@ -205,7 +205,10 @@
   <div id="calendar" class="content active">
     <div class="section-title">
       スケジュール管理
-      <button class="action-btn" style="font-size: 12px; padding: 8px 15px;" onclick="openCategoryModal()">🏷️ カテゴリー編集</button>
+      <div style="display:flex; gap:8px;">
+        <button class="action-btn" style="font-size: 12px; padding: 8px 15px;" onclick="sendTodayScheduleToLine()">📱 今日の予定をLINE送信</button>
+        <button class="action-btn" style="font-size: 12px; padding: 8px 15px;" onclick="openCategoryModal()">🏷️ カテゴリー編集</button>
+      </div>
     </div>
     <div class="cal-header">
       <button class="action-btn" onclick="changeMonth(-1)">◀ 先月</button>
@@ -627,6 +630,23 @@
     function renderCategories() { document.getElementById('cat-list').innerHTML = (appData.categories||[]).map(c => `<li style="border-left:5px solid ${c.color};"><span style="font-weight:bold;">${c.name}</span>${c.id==='baito'?'<span style="font-size:11px;color:#999;">(固定)</span>':`<button class="delete-btn" onclick="deleteCategory('${c.id}')">削除</button>`}</li>`).join(''); }
     function addCategory() { const name = document.getElementById('cat-name-input').value, color = document.getElementById('cat-color-input').value; if(!name) return; appData.categories.push({ id: 'cat_'+Date.now(), name, color }); document.getElementById('cat-name-input').value = ''; saveData(); renderCategories(); }
     function deleteCategory(id) { if(id==='baito') return; appData.categories = appData.categories.filter(c=>c.id!==id); saveData(); renderCategories(); }
+    function sendTodayScheduleToLine() {
+      const todayStr = new Date().toLocaleDateString('sv-SE');
+      let msg = `📅【${todayStr} の予定確認】\n`;
+      const events = (appData.schedules || []).filter(s => s.date === todayStr);
+      if (events.length > 0) {
+        events.forEach(e => {
+          if (e.catId === 'baito') msg += `・🏢バイト: ${getJobName(e.jobId)} (${e.start}~${e.end})\n`;
+          else msg += `・予定: ${e.title} ${e.start ? `(${e.start}${e.end ? '~' + e.end : ''})` : ''}\n`;
+        });
+      } else {
+        msg += "本日の予定はありません。\n";
+      }
+      const uberEvents = (appData.uberRecords || []).filter(u => u.date === todayStr);
+      uberEvents.forEach(u => { msg += `・🚴‍♂️Uber: ¥${u.earned.toLocaleString()}\n`; });
+      sendLineNotify(msg);
+      alert('今日の予定をLINEに送信しました！');
+    }
 
     // ==========================================
     // ⏰ バイト ＆ Uber
