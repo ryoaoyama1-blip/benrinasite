@@ -80,11 +80,15 @@
     .delete-btn:hover { background: var(--danger); color: white; border-color: var(--danger); }
     
     /* カレンダー */
+    .cal-wrapper { width: 100%; overflow-x: auto; padding-bottom: 10px; }
     .cal-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 15px; font-size: 18px; font-weight: bold; }
-    .cal-grid { display: grid; grid-template-columns: repeat(7, 1fr); gap: 1px; background: var(--border); border: 1px solid var(--border); border-radius: 8px; overflow: hidden; }
+    .cal-grid { display: grid; grid-template-columns: repeat(7, 1fr); gap: 1px; background: var(--border); border: 1px solid var(--border); border-radius: 8px; overflow: hidden; min-width: 800px; }
     .cal-head-cell { background: var(--primary); color: var(--gold); text-align: center; padding: 10px 0; font-size: 12px; font-weight: bold; }
-    .cal-cell { background: #fff; min-height: 100px; padding: 5px; cursor: pointer; transition: 0.2s; display: flex; flex-direction: column; }
+    .cal-cell { background: #fff; min-height: 100px; max-height: 150px; overflow-y: auto; padding: 5px; cursor: pointer; transition: 0.2s; display: flex; flex-direction: column; }
     .cal-cell:hover { background: #fdfaf3; }
+    /* セル内のスクロールバーを少し見やすく */
+    .cal-cell::-webkit-scrollbar { width: 4px; }
+    .cal-cell::-webkit-scrollbar-thumb { background: #d1d5db; border-radius: 4px; }
     .cal-date { font-size: 14px; font-weight: bold; color: var(--text-light); margin-bottom: 5px; }
     .cal-today { background: #fffbeb !important; }
     .cal-today .cal-date { color: var(--danger); }
@@ -132,8 +136,10 @@
     .link-item a { color: var(--primary); text-decoration: none; font-weight: bold; display: flex; align-items: center; gap: 10px; width: 100%; }
     .typo-warning { color: var(--danger); font-size: 15px; margin-top: 15px; background: #fef2f2; padding: 15px 20px; border-radius: 8px; border: 2px solid #fca5a5; display: none; line-height: 1.6; font-weight: bold; }
     
+    /* スマホ向け調整 */
     @media(max-width: 768px) {
-      .cal-cell { min-height: 60px !important; padding: 4px 2px !important; display: block !important; }
+      .cal-grid { min-width: auto; } /* スマホでは横幅制限を解除 */
+      .cal-cell { min-height: 60px !important; max-height: none !important; padding: 4px 2px !important; display: block !important; overflow-y: visible !important; }
       .cal-date { text-align: center; font-size: 12px; margin-bottom: 3px; }
       .event-badge { display: inline-block !important; width: 6px !important; height: 6px !important; padding: 0 !important; margin: 1px 2px !important; border-radius: 50% !important; font-size: 0 !important; overflow: hidden; }
     }
@@ -195,7 +201,10 @@
       <div id="cal-month-title" style="color:var(--primary);"></div>
       <button class="action-btn" onclick="changeMonth(1)">来月 ▶</button>
     </div>
-    <div class="cal-grid" id="cal-grid"></div>
+    <!-- 🌟 横スクロール用のラップ要素を追加 -->
+    <div class="cal-wrapper">
+      <div class="cal-grid" id="cal-grid"></div>
+    </div>
   </div>
 
   <!-- モーダル群 (カレンダー用) -->
@@ -840,9 +849,6 @@
     function addFinance() { const t=document.getElementById('fin-type').value, d=document.getElementById('fin-date').value, n=document.getElementById('fin-name').value, m=document.getElementById('fin-method').value, a=parseInt(document.getElementById('fin-amount').value); if(!n||!a)return; appData.finance.push({id:Date.now().toString(),type:t,date:d||new Date().toISOString().split('T')[0],name:n,method:m,amount:a}); document.getElementById('fin-name').value='';document.getElementById('fin-amount').value=''; saveData(); renderFinance(); }
 
     function checkTypos(el) {
-      // 🚀 文字数カウントの精度向上
-      // 1. 改行(\n, \r)をカウントから除外
-      // 2. 絵文字などのサロゲートペア(2文字分)を正確に1文字としてカウント
       const textWithoutNewlines = el.value.replace(/[\r\n]/g, '');
       const exactCharCount = Array.from(textWithoutNewlines).length;
       document.getElementById('char-count').innerText = exactCharCount;
