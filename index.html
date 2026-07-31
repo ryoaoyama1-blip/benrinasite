@@ -1,426 +1,871 @@
 <!DOCTYPE html>
 <html lang="ja">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>MY PORTAL</title>
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
-    <style>
-        :root {
-            --primary: #111827;
-            --primary-hover: #1f2937;
-            --bg-color: #f3f4f6;
-            --surface: #ffffff;
-            --text: #1f2937;
-            --text-light: #6b7280;
-            --border: #e5e7eb;
-            --shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.05), 0 2px 4px -1px rgba(0, 0, 0, 0.03);
-            --radius: 12px;
-        }
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>MY PORTAL - Firebase Edition (Full Version)</title>
 
-        * {
-            box-sizing: border-box;
-            margin: 0;
-            padding: 0;
-            font-family: 'Inter', -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
-        }
+  <!-- 🌟 Firebase SDK (Compat版) -->
+  <script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-app-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-auth-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore-compat.js"></script>
+  <!-- 📊 Chart.js (グラフ用) -->
+  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 
-        body {
-            background-color: var(--bg-color);
-            color: var(--text);
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            min-height: 100vh;
-            padding: 20px;
-        }
+  <style>
+    /* =======================================
+       🎨 プレミアムデザイン ベース設定
+       ======================================= */
+    :root {
+      --primary: #111827;
+      --gold: #D4AF37;
+      --gold-hover: #b5952f;
+      --bg-color: #f3f4f6;
+      --surface: #ffffff;
+      --text: #1f2937;
+      --text-light: #6b7280;
+      --border: #e5e7eb;
+      --danger: #ef4444;
+      --success: #10b981;
+      --info: #3b82f6;
+      --uber: #06C167;
+    }
+    
+    body { font-family: 'Helvetica Neue', 'Hiragino Kaku Gothic ProN', Arial, sans-serif; margin: 0; padding: 0; color: var(--text); background-color: var(--bg-color); letter-spacing: 0.05em; }
+    
+    /* 🔐 ログイン画面 */
+    #login-screen { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: var(--primary); display: flex; flex-direction: column; justify-content: center; align-items: center; z-index: 9999; }
+    #login-box { background: var(--surface); padding: 40px; border-radius: 12px; box-shadow: 0 10px 30px rgba(0,0,0,0.5); text-align: center; width: 90%; max-width: 360px; }
+    #login-box h1 { color: var(--primary); font-size: 24px; margin-bottom: 5px; }
+    #login-box p { color: var(--text-light); font-size: 13px; margin-bottom: 20px; }
+    #login-box input { width: 100%; padding: 12px; margin-bottom: 12px; box-sizing: border-box; border: 1px solid var(--border); border-radius: 6px; font-size: 14px; }
+    .auth-btn-group { display: flex; gap: 10px; margin-top: 10px; }
+    .auth-btn-group button { flex: 1; padding: 12px 5px; font-size: 13px; }
 
-        .container {
-            width: 100%;
-            max-width: 480px;
-            background: var(--surface);
-            border-radius: var(--radius);
-            box-shadow: var(--shadow);
-            overflow: hidden;
-            border: 1px solid var(--border);
-        }
+    /* ヘッダー */
+    header { background: var(--primary); padding: 15px 40px; display: flex; justify-content: space-between; align-items: center; box-shadow: 0 4px 15px rgba(0,0,0,0.1); }
+    h1 { margin: 0; font-size: 24px; color: var(--gold); letter-spacing: 3px; font-weight: 300; }
+    .user-info { font-size: 12px; color: #9ca3af; margin-top: 3px; }
+    
+    /* タブ */
+    .tabs { display: flex; overflow-x: auto; background: var(--surface); padding: 0 30px; box-shadow: 0 2px 10px rgba(0,0,0,0.03); margin-bottom: 30px; border-bottom: 1px solid var(--border); }
+    .tab-btn { padding: 18px 25px; border: none; background: transparent; cursor: pointer; font-weight: bold; color: var(--text-light); border-bottom: 3px solid transparent; white-space: nowrap; font-size: 15px; transition: all 0.3s ease; }
+    .tab-btn:hover { color: var(--primary); }
+    .tab-btn.active { color: var(--primary); border-bottom: 3px solid var(--gold); }
+    
+    /* コンテンツエリア */
+    .content { padding: 40px; max-width: 950px; margin: 0 auto 50px; display: none; background: var(--surface); border-radius: 12px; box-shadow: 0 10px 30px rgba(0,0,0,0.05); }
+    .content.active { display: block; animation: fadeIn 0.4s ease; }
+    @keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
+    
+    .section-title { border-bottom: 1px solid var(--border); padding-bottom: 15px; margin-top: 0; margin-bottom: 30px; color: var(--primary); font-size: 22px; font-weight: 300; display: flex; justify-content: space-between; align-items: center; }
+    
+    /* フォーム要素 */
+    .input-group { display: flex; gap: 15px; margin-bottom: 25px; flex-wrap: wrap; align-items: center; background: #f9fafb; padding: 20px; border-radius: 8px; border: 1px solid var(--border); }
+    input[type="text"], input[type="email"], input[type="number"], input[type="password"], input[type="date"], input[type="datetime-local"], input[type="time"], select, textarea { padding: 12px 15px; border: 1px solid var(--border); border-radius: 6px; flex-grow: 1; outline: none; font-size: 15px; transition: border 0.3s; box-sizing: border-box; }
+    input:focus, select:focus, textarea:focus { border-color: var(--gold); box-shadow: 0 0 0 2px rgba(212, 175, 55, 0.2); }
+    
+    button.action-btn { padding: 12px 25px; background: var(--primary); color: var(--gold); border: 1px solid var(--primary); border-radius: 6px; cursor: pointer; font-weight: bold; font-size: 14px; transition: all 0.3s; letter-spacing: 1px; white-space: nowrap; }
+    button.action-btn:hover { background: #1f2937; color: #fff; box-shadow: 0 4px 10px rgba(0,0,0,0.1); }
+    button.gold-btn { background: var(--gold); color: var(--primary); border-color: var(--gold); }
+    button.gold-btn:hover { background: var(--gold-hover); color: var(--primary); }
+    button.uber-btn { background: var(--uber); color: #fff; border-color: var(--uber); }
+    button.uber-btn:hover { background: #05a056; }
+    
+    /* リスト */
+    ul { list-style: none; padding: 0; margin: 0; }
+    li { display: flex; justify-content: space-between; padding: 15px 20px; background: #ffffff; border: 1px solid var(--border); border-radius: 8px; margin-bottom: 10px; align-items: center; box-shadow: 0 2px 5px rgba(0,0,0,0.02); transition: transform 0.2s; }
+    li:hover { transform: translateX(3px); border-color: #d1d5db; }
+    .delete-btn { background: transparent; color: var(--text-light); border: 1px solid var(--border); padding: 6px 12px; cursor: pointer; border-radius: 4px; font-size: 12px; transition: 0.2s; white-space: nowrap; }
+    .delete-btn:hover { background: var(--danger); color: white; border-color: var(--danger); }
+    
+    /* カレンダー */
+    .cal-wrapper { width: 100%; overflow-x: auto; padding-bottom: 10px; }
+    .cal-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 15px; font-size: 18px; font-weight: bold; }
+    .cal-grid { display: grid; grid-template-columns: repeat(7, 1fr); gap: 1px; background: var(--border); border: 1px solid var(--border); border-radius: 8px; overflow: hidden; min-width: 800px; }
+    .cal-head-cell { background: var(--primary); color: var(--gold); text-align: center; padding: 10px 0; font-size: 12px; font-weight: bold; }
+    .cal-cell { background: #fff; min-height: 100px; max-height: 150px; overflow-y: auto; padding: 5px; cursor: pointer; transition: 0.2s; display: flex; flex-direction: column; }
+    .cal-cell:hover { background: #fdfaf3; }
+    /* セル内のスクロールバーを少し見やすく */
+    .cal-cell::-webkit-scrollbar { width: 4px; }
+    .cal-cell::-webkit-scrollbar-thumb { background: #d1d5db; border-radius: 4px; }
+    .cal-date { font-size: 14px; font-weight: bold; color: var(--text-light); margin-bottom: 5px; }
+    .cal-today { background: #fffbeb !important; }
+    .cal-today .cal-date { color: var(--danger); }
+    .event-badge { font-size: 11px; padding: 3px 5px; border-radius: 4px; margin-bottom: 3px; color: #fff; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; font-weight: bold; }
 
-        /* Header / Clock Section */
-        .header {
-            padding: 24px;
-            background: #ffffff;
-            border-bottom: 1px solid var(--border);
-            text-align: center;
-        }
+    /* モーダル */
+    #modal-overlay { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.5); z-index: 1000; justify-content: center; align-items: center; }
+    .modal-content { background: #fff; padding: 30px; border-radius: 12px; width: 90%; max-width: 450px; box-shadow: 0 10px 30px rgba(0,0,0,0.2); max-height: 90vh; overflow-y: auto; }
 
-        .clock-time {
-            font-size: 32px;
-            font-weight: 700;
-            letter-spacing: -0.02em;
-            color: var(--primary);
-        }
+    /* バイト */
+    .punch-card { display: flex; gap: 15px; margin-bottom: 25px; }
+    .punch-btn { flex: 1; padding: 25px; font-size: 20px; font-weight: bold; border-radius: 12px; border: none; cursor: pointer; color: #fff; box-shadow: 0 4px 10px rgba(0,0,0,0.1); transition: 0.2s; }
+    .punch-in { background: var(--success); }
+    .punch-out { background: var(--primary); }
+    
+    /* 習慣 */
+    .habit-table { width: 100%; border-collapse: collapse; margin-top: 15px; }
+    .habit-table th, .habit-table td { padding: 12px; border: 1px solid var(--border); text-align: center; }
+    .habit-table th:first-child { text-align: left; width: 30%; }
+    .habit-check { transform: scale(1.5); cursor: pointer; }
 
-        .clock-date {
-            font-size: 13px;
-            color: var(--text-light);
-            margin-top: 4px;
-            font-weight: 500;
-        }
-
-        /* Tabs */
-        .tabs {
-            display: flex;
-            background: #f9fafb;
-            border-bottom: 1px solid var(--border);
-        }
-
-        .tab-btn {
-            flex: 1;
-            padding: 12px 0;
-            border: none;
-            background: none;
-            font-size: 13px;
-            font-weight: 600;
-            color: var(--text-light);
-            cursor: pointer;
-            transition: all 0.2s ease;
-            position: relative;
-        }
-
-        .tab-btn.active {
-            color: var(--primary);
-            background: var(--surface);
-        }
-
-        .tab-btn.active::after {
-            content: '';
-            position: absolute;
-            bottom: -1px;
-            left: 0;
-            width: 100%;
-            height: 2px;
-            background: var(--primary);
-        }
-
-        /* Tab Content */
-        .tab-content {
-            display: none;
-            padding: 20px;
-        }
-
-        .tab-content.active {
-            display: block;
-        }
-
-        /* Quick Links Tab */
-        .quick-links {
-            display: grid;
-            grid-template-columns: repeat(2, 1fr);
-            gap: 12px;
-        }
-
-        .link-card {
-            display: flex;
-            align-items: center;
-            padding: 12px 16px;
-            background: var(--surface);
-            border: 1px solid var(--border);
-            border-radius: var(--radius);
-            text-decoration: none;
-            color: var(--text);
-            font-weight: 500;
-            font-size: 14px;
-            transition: all 0.2s ease;
-        }
-
-        .link-card:hover {
-            border-color: var(--primary);
-            box-shadow: 0 2px 4px rgba(0,0,0,0.05);
-            transform: translateY(-1px);
-        }
-
-        .link-icon {
-            font-size: 18px;
-            margin-right: 12px;
-        }
-
-        /* Schedule Tab */
-        .timeline {
-            display: flex;
-            flex-direction: column;
-            gap: 12px;
-        }
-
-        .timeline-item {
-            display: flex;
-            gap: 16px;
-            font-size: 14px;
-        }
-
-        .timeline-time {
-            width: 50px;
-            font-weight: 600;
-            color: var(--text-light);
-            font-size: 12px;
-            padding-top: 2px;
-        }
-
-        .timeline-card {
-            flex: 1;
-            padding: 12px;
-            background: #f9fafb;
-            border-radius: 8px;
-            border-left: 3px solid var(--primary);
-        }
-
-        .timeline-title {
-            font-weight: 600;
-        }
-
-        .timeline-desc {
-            font-size: 12px;
-            color: var(--text-light);
-            margin-top: 4px;
-        }
-
-        /* Settings Tab */
-        .settings-section {
-            background: #f9fafb;
-            padding: 20px;
-            border-radius: 8px;
-            border: 1px solid var(--border);
-            margin-bottom: 20px;
-        }
-
-        .settings-title {
-            font-size: 14px;
-            font-weight: 600;
-            margin-bottom: 12px;
-            color: var(--primary);
-        }
-
-        .input-group {
-            margin-bottom: 12px;
-        }
-
-        .input-group label {
-            display: block;
-            font-size: 12px;
-            color: var(--text-light);
-            margin-bottom: 4px;
-        }
-
-        .input-group input {
-            width: 100%;
-            padding: 8px 12px;
-            border: 1px solid var(--border);
-            border-radius: 6px;
-            font-size: 13px;
-        }
-
-        .btn {
-            background: var(--primary);
-            color: white;
-            border: none;
-            padding: 8px 16px;
-            border-radius: 6px;
-            font-size: 13px;
-            font-weight: 500;
-            cursor: pointer;
-            width: 100%;
-            transition: background 0.2s;
-        }
-
-        .btn:hover {
-            background: var(--primary-hover);
-        }
-    </style>
+    /* 汎用クラス */
+    .priority-high { border-left: 5px solid var(--danger); }
+    .priority-mid { border-left: 5px solid var(--gold); }
+    .priority-low { border-left: 5px solid #9ca3af; }
+    .todo-sub-header { font-size: 16px; color: var(--primary); margin: 25px 0 15px; font-weight: bold; }
+    .sub-tabs { display: flex; gap: 10px; margin-bottom: 15px; flex-wrap: wrap; }
+    .sub-tab-btn { padding: 10px 20px; border: 1px solid var(--border); background: #f9fafb; border-radius: 6px; cursor: pointer; font-size: 14px; color: var(--text-light); transition: 0.3s; }
+    .sub-tab-btn.active { background: var(--primary); color: var(--gold); border-color: var(--primary); }
+    .shop-area { display: grid; grid-template-columns: 1fr 1fr; gap: 30px; }
+    @media(max-width: 768px){ .shop-area { grid-template-columns: 1fr; } }
+    .shop-box { background: #f9fafb; padding: 20px; border-radius: 8px; border: 1px solid var(--border); }
+    .shop-box h3 { margin-top: 0; font-size: 16px; color: var(--primary); text-align: center; border-bottom: 2px solid var(--border); padding-bottom: 10px; }
+    .finance-dash { display: flex; gap: 20px; margin-bottom: 25px; }
+    .fin-card { flex: 1; background: #fff; padding: 20px; border-radius: 8px; border: 1px solid var(--border); text-align: center; box-shadow: 0 4px 6px rgba(0,0,0,0.02); }
+    .fin-card h4 { margin: 0 0 10px 0; color: var(--text-light); font-size: 14px; font-weight: normal; }
+    .fin-card .amount { font-size: 24px; font-weight: bold; color: var(--primary); }
+    .amount.income { color: var(--success); }
+    .amount.expense { color: var(--danger); }
+    .premium-table { width: 100%; border-collapse: collapse; margin-top: 10px; background: #fff; }
+    .premium-table th { background: #f9fafb; padding: 12px; font-size: 13px; color: var(--text-light); text-align: center; border-bottom: 2px solid var(--border); }
+    .premium-table td { padding: 15px 12px; border-bottom: 1px solid var(--border); font-size: 14px; text-align: right; }
+    .premium-table td:nth-child(2), .premium-table td:nth-child(3) { text-align: left; }
+    .link-item { padding: 20px; font-size: 16px; }
+    .link-item a { color: var(--primary); text-decoration: none; font-weight: bold; display: flex; align-items: center; gap: 10px; width: 100%; }
+    .typo-warning { color: var(--danger); font-size: 15px; margin-top: 15px; background: #fef2f2; padding: 15px 20px; border-radius: 8px; border: 2px solid #fca5a5; display: none; line-height: 1.6; font-weight: bold; }
+    
+    /* スマホ向け調整 */
+    @media(max-width: 768px) {
+      .cal-grid { min-width: auto; } /* スマホでは横幅制限を解除 */
+      .cal-cell { min-height: 60px !important; max-height: none !important; padding: 4px 2px !important; display: block !important; overflow-y: visible !important; }
+      .cal-date { text-align: center; font-size: 12px; margin-bottom: 3px; }
+      .event-badge { display: inline-block !important; width: 6px !important; height: 6px !important; padding: 0 !important; margin: 1px 2px !important; border-radius: 50% !important; font-size: 0 !important; overflow: hidden; }
+    }
+  </style>
 </head>
 <body>
 
-    <div class="container">
-        <!-- Header / Clock -->
-        <div class="header">
-            <div class="clock-time" id="clock-time">00:00:00</div>
-            <div class="clock-date" id="clock-date">----年--月--日 (--)</div>
-        </div>
+  <!-- 🔐 ログイン画面 -->
+  <div id="login-screen">
+    <div id="login-box">
+      <h1>MY PORTAL</h1>
+      <p>ユーザーログイン / 新規登録</p>
+      <input type="email" id="auth-email" placeholder="メールアドレス">
+      <input type="password" id="auth-password" placeholder="パスワード（6文字以上）">
+      <div class="auth-btn-group">
+        <button class="action-btn gold-btn" onclick="loginUser()">ログイン</button>
+        <button class="action-btn" style="background:#374151; border-color:#374151; color:#fff;" onclick="signupUser()">新規登録</button>
+      </div>
+      <p id="auth-error" style="color: var(--danger); font-size: 12px; margin-top: 15px; margin-bottom: 0;"></p>
+    </div>
+  </div>
 
-        <!-- Navigation Tabs -->
-        <div class="tabs">
-            <button class="tab-btn active" onclick="switchTab('quick-links')">クイックリンク</button>
-            <button class="tab-btn" onclick="switchTab('schedule')">スケジュール</button>
-            <button class="tab-btn" onclick="switchTab('settings')">設定</button>
-        </div>
+  <!-- ヘッダー -->
+  <header>
+    <div>
+      <h1>MY PORTAL</h1>
+      <div class="user-info" id="user-display-email">ログイン中: 読み込み中...</div>
+    </div>
+    <button class="delete-btn" style="background: rgba(255,255,255,0.1); color: #fff; border-color: rgba(255,255,255,0.3);" onclick="logoutUser()">ログアウト</button>
+  </header>
 
-        <!-- Tab 1: Quick Links -->
-        <div id="quick-links" class="tab-content active">
-            <div class="quick-links">
-                <a href="https://google.com" target="_blank" class="link-card">
-                    <span class="link-icon">🔍</span>
-                    Google
-                </a>
-                <a href="https://youtube.com" target="_blank" class="link-card">
-                    <span class="link-icon">▶️</span>
-                    YouTube
-                </a>
-                <a href="https://github.com" target="_blank" class="link-card">
-                    <span class="link-icon">🐙</span>
-                    GitHub
-                </a>
-                <a href="https://chat.openai.com" target="_blank" class="link-card">
-                    <span class="link-icon">🤖</span>
-                    ChatGPT
-                </a>
-            </div>
-        </div>
+  <!-- タブナビゲーション -->
+  <div class="tabs">
+    <button class="tab-btn active" onclick="switchTab('calendar', this)">📅 カレンダー</button>
+    <button class="tab-btn" onclick="switchTab('todo', this)">📝 ToDo</button>
+    <button class="tab-btn" onclick="switchTab('baito', this)">⏰ バイト＆Uber</button>
+    <button class="tab-btn" onclick="switchTab('habit', this)">🔄 習慣</button>
+    <button class="tab-btn" onclick="switchTab('equipment', this)">🛒 備品</button>
+    <button class="tab-btn" onclick="switchTab('shopping', this)">🛍️ 買い物</button>
+    <button class="tab-btn" onclick="switchTab('finance', this)">🏦 家計簿</button>
+    <button class="tab-btn" onclick="switchTab('report', this)">📄 レポート</button>
+    <button class="tab-btn" onclick="switchTab('links', this)">🎓 リンク集</button>
+    <button class="tab-btn" onclick="switchTab('settings', this)">⚙️ 設定</button>
+  </div>
 
-        <!-- Tab 2: Schedule -->
-        <div id="schedule" class="tab-content">
-            <div class="timeline">
-                <div class="timeline-item">
-                    <div class="timeline-time">09:00</div>
-                    <div class="timeline-card">
-                        <div class="timeline-title">朝礼・メール確認</div>
-                        <div class="timeline-desc">一日のタスクの優先順位付け</div>
-                    </div>
-                </div>
-                <div class="timeline-item">
-                    <div class="timeline-time">13:00</div>
-                    <div class="timeline-card">
-                        <div class="timeline-title">チームミーティング</div>
-                        <div class="timeline-desc">進捗共有と問題点の整理</div>
-                    </div>
-                </div>
-                <div class="timeline-item">
-                    <div class="timeline-time">17:00</div>
-                    <div class="timeline-card">
-                        <div class="timeline-title">振り返り・日報作成</div>
-                        <div class="timeline-desc">明日の予定確認</div>
-                    </div>
-                </div>
-            </div>
-        </div>
+  <!-- ==============================================
+       📅 カレンダー ＆ スケジュール
+       ============================================== -->
+  <div id="calendar" class="content active">
+    <div class="section-title">
+      スケジュール管理
+      <div style="display:flex; gap:8px;">
+        <button class="action-btn" style="font-size: 12px; padding: 8px 15px;" onclick="sendTodayScheduleToLine()">📱 今日の予定をLINE送信</button>
+        <button class="action-btn" style="font-size: 12px; padding: 8px 15px;" onclick="openCategoryModal()">🏷️ カテゴリー編集</button>
+      </div>
+    </div>
+    <div class="cal-header">
+      <button class="action-btn" onclick="changeMonth(-1)">◀ 先月</button>
+      <div id="cal-month-title" style="color:var(--primary);"></div>
+      <button class="action-btn" onclick="changeMonth(1)">来月 ▶</button>
+    </div>
+    <!-- 🌟 横スクロール用のラップ要素を追加 -->
+    <div class="cal-wrapper">
+      <div class="cal-grid" id="cal-grid"></div>
+    </div>
+  </div>
 
-        <!-- Tab 3: Settings -->
-        <div id="settings" class="tab-content">
-            <div class="settings-section">
-                <div class="settings-title">LINE通知設定</div>
-                <div class="input-group">
-                    <label for="line-token">LINE Notify Token</label>
-                    <input type="password" id="line-token" placeholder="トークンを入力してください">
-                </div>
-                <button class="btn" onclick="saveSettings()">保存</button>
-            </div>
-
-            <div class="settings-section">
-                <div class="settings-title">データのバックアップ</div>
-                <button class="btn" onclick="exportData()">エクスポート</button>
-            </div>
+  <!-- モーダル群 (カレンダー用) -->
+  <div id="modal-overlay">
+    <div class="modal-content" id="modal-content-sch">
+      <h3 style="margin-top:0; color:var(--primary); border-bottom: 2px solid var(--border); padding-bottom:10px;">予定の追加: <span id="modal-date-display"></span></h3>
+      <input type="hidden" id="modal-date-val">
+      <label style="font-size:14px; font-weight:bold;">種類（カテゴリー）</label>
+      <select id="modal-sch-cat" onchange="toggleSchFields()" style="width:100%; margin-bottom:15px; margin-top:5px;"></select>
+      <input type="text" id="modal-sch-title" placeholder="予定のタイトル (バイト以外)" style="width:100%; margin-bottom:15px;">
+      <select id="modal-sch-job" style="width:100%; margin-bottom:15px; display:none;"></select>
+      <div style="display:flex; align-items:center; gap:5px; margin-bottom:15px;">
+        <input type="time" id="modal-sch-start"> 〜 <input type="time" id="modal-sch-end">
+      </div>
+      <div style="background:#f9fafb; padding:15px; border-radius:8px; border:1px solid var(--border); margin-bottom:15px;">
+        <label style="display:flex; align-items:center; font-weight:bold; font-size:14px; cursor:pointer;">
+          <input type="checkbox" id="modal-bulk-check" onchange="toggleBulkAdd()" style="margin-right:10px; transform:scale(1.2);"> 日程をまとめて追加する
+        </label>
+        <div id="bulk-add-area" style="display:none; margin-top:10px;">
+          <label style="font-size:12px;">終了日指定:</label>
+          <input type="date" id="modal-bulk-end" style="width:100%; margin-bottom:10px;">
+          <div style="display:flex; gap:10px; font-size:13px; margin-top:5px;">
+            <label><input type="checkbox" class="bulk-day" value="1">月</label><label><input type="checkbox" class="bulk-day" value="2">火</label><label><input type="checkbox" class="bulk-day" value="3">水</label><label><input type="checkbox" class="bulk-day" value="4">木</label><label><input type="checkbox" class="bulk-day" value="5">金</label><label><input type="checkbox" class="bulk-day" value="6">土</label><label><input type="checkbox" class="bulk-day" value="0">日</label>
+          </div>
         </div>
+      </div>
+      <button class="action-btn gold-btn" style="width:100%; margin-bottom:20px; padding:12px;" onclick="saveSchedule()">予定を登録</button>
+      <div style="font-weight:bold; font-size:14px; margin-bottom:5px;">この日の予定一覧</div>
+      <ul id="modal-sch-list" style="max-height:150px; overflow-y:auto; font-size:13px; margin-bottom:15px;"></ul>
+      <div style="text-align:right;"><button class="delete-btn" onclick="closeModal()">閉じる</button></div>
     </div>
 
-    <script>
-        // Clock Logic
-        function updateClock() {
-            const now = new Date();
-            
-            // Time
-            const hours = String(now.getHours()).padStart(2, '0');
-            const minutes = String(now.getMinutes()).padStart(2, '0');
-            const seconds = String(now.getSeconds()).padStart(2, '0');
-            document.getElementById('clock-time').textContent = `${hours}:${minutes}:${seconds}`;
+    <div class="modal-content" id="modal-content-cat" style="display:none;">
+      <h3 style="margin-top:0; color:var(--primary);">カテゴリー編集</h3>
+      <div class="input-group" style="padding:10px; margin-bottom:15px;">
+        <input type="text" id="cat-name-input" placeholder="カテゴリー名" style="flex-grow:2;">
+        <input type="color" id="cat-color-input" value="#3b82f6" style="width:50px; height:40px; padding:0; border:none;">
+        <button class="action-btn gold-btn" onclick="addCategory()">追加</button>
+      </div>
+      <ul id="cat-list" style="max-height:200px; overflow-y:auto;"></ul>
+      <div style="text-align:right; margin-top:20px;"><button class="delete-btn" onclick="closeModal()">完了</button></div>
+    </div>
+  </div>
 
-            // Date
-            const year = now.getFullYear();
-            const month = String(now.getMonth() + 1).padStart(2, '0');
-            const date = String(now.getDate()).padStart(2, '0');
-            const days = ['日', '月', '火', '水', '木', '金', '土'];
-            const dayName = days[now.getDay()];
-            
-            document.getElementById('clock-date').textContent = `${year}年${month}月${date}日 (${dayName})`;
-        }
+  <!-- ==============================================
+       📝 Smart ToDo
+       ============================================== -->
+  <div id="todo" class="content">
+    <div class="section-title">
+      <div>Smart ToDo <span style="font-size:12px; color:#6b7280; display:block;">※ 期日順自動ソート＆自動リマインド対応</span></div>
+      <button class="action-btn" style="font-size: 12px; padding: 8px 15px;" onclick="sendActiveTodosToLine()">📱 未完了ToDoをLINEに送信</button>
+    </div>
+    <div class="input-group">
+      <input type="text" id="todo-input" placeholder="タスク名" style="flex-grow: 2;">
+      <input type="datetime-local" id="todo-date">
+      <button class="action-btn gold-btn" onclick="addTodo()">追加</button>
+    </div>
+    <div class="todo-sub-header">📌 未完了のタスク（期日順）</div>
+    <ul id="todo-list-active"></ul>
+    <div class="todo-sub-header" style="color: #9ca3af; border-top: 1px dashed #e5e7eb; padding-top: 20px;">✅ 完了済みのタスク</div>
+    <ul id="todo-list-done"></ul>
+  </div>
 
-        setInterval(updateClock, 1000);
-        updateClock();
-
-        // Tab Switching Logic
-        function switchTab(tabId) {
-            // Hide all tab contents
-            const contents = document.querySelectorAll('.tab-content');
-            contents.forEach(content => content.classList.remove('active'));
-
-            // Deactivate all tab buttons
-            const buttons = document.querySelectorAll('.tab-btn');
-            buttons.forEach(button => button.classList.remove('active'));
-
-            // Show selected tab content
-            document.getElementById(tabId).classList.add('active');
-
-            // Activate selected tab button
-            const activeBtn = Array.from(buttons).find(btn => btn.getAttribute('onclick').includes(tabId));
-            if (activeBtn) {
-                activeBtn.classList.add('active');
-            }
-        }
-
-        // Settings Logic (Placeholder)
-        function saveSettings() {
-            const token = document.getElementById('line-token').value;
-            if (token) {
-                alert('設定を保存しました。');
-            } else {
-                alert('トークンを入力してください。');
-            }
-        }
-
-        function exportData() {
-            alert('データをエクスポートしました。');
-        }
-    </script>
-</body>
-<!-- ========================================== -->
-<!-- ここから下が完全追記部分（元のコードは一字一句変えていません） -->
-<!-- ========================================== -->
-<script>
-document.addEventListener('DOMContentLoaded', function() {
-  const settingsContent = document.getElementById('settings');
-  if (settingsContent) {
-    const newSettingDiv = document.createElement('div');
-    newSettingDiv.className = 'settings-section';
-    newSettingDiv.innerHTML = `
-      <div class="settings-title">テーマ設定（拡張機能）</div>
-      <label style="font-size:13px; font-weight:500; cursor:pointer; display:flex; align-items:center;">
-        <input type="checkbox" id="ext-dark-mode" style="transform: scale(1.3); margin-right: 10px; cursor:pointer;"> 
-        ダークモードを有効にする 🌙
-      </label>
-    `;
+  <!-- ==============================================
+       ⏰ バイト ＆ Uber
+       ============================================== -->
+  <div id="baito" class="content">
     
-    // 既存の「データのバックアップ」要素の前に自動挿入
-    const backupSection = settingsContent.children[1];
-    if (backupSection) {
-      settingsContent.insertBefore(newSettingDiv, backupSection);
-    } else {
-      settingsContent.appendChild(newSettingDiv);
+    <!-- カレンダー連動 見込み給与 -->
+    <div style="background:#fffbeb; padding:15px; border-radius:8px; border:1px solid #fde68a; margin-bottom:25px; display:flex; justify-content:space-between; align-items:center;">
+      <div>
+        <strong style="color:var(--gold-hover); font-size:14px; display:block; margin-bottom:5px;">💡 今月の見込み給与（カレンダーの予定から自動計算）</strong>
+        <span style="font-size:12px; color:var(--text-light);">※当月のカレンダーに登録された「バイト」の予定と時給設定から算出</span>
+      </div>
+      <div id="expected-wage-display" style="font-size:24px; font-weight:bold; color:var(--primary);">¥ 0</div>
+    </div>
+
+    <!-- Uber用セクション -->
+    <div class="section-title" style="color: var(--uber); border-bottom-color: rgba(6,193,103,0.3);">
+      <div>🚴‍♂️ Uber Eats 稼働記録</div>
+    </div>
+
+    <!-- 即席単価チェッカー -->
+    <div style="background:#eafaf1; padding:15px; border-radius:8px; border:1px solid #a8e5c6; margin-bottom:20px;">
+      <strong style="color:var(--uber); font-size:14px; display:block; margin-bottom:10px;">⚡ リクエスト時 即席単価チェッカー</strong>
+      <div style="display:flex; gap:10px; flex-wrap:wrap; align-items:center;">
+        <input type="number" id="uber-check-price" placeholder="予定額(円)" style="max-width:100px; padding:8px;">
+        <input type="number" id="uber-check-dist" placeholder="距離(km)" step="0.1" style="max-width:100px; padding:8px;">
+        <input type="number" id="uber-check-time" placeholder="所要予想(分)" style="max-width:100px; padding:8px;">
+        <button class="action-btn uber-btn" style="padding:8px 15px;" onclick="calcUberChecker()">判定</button>
+        <div id="uber-check-result" style="font-weight:bold; font-size:15px; color:var(--text); margin-left:10px;"></div>
+      </div>
+    </div>
+
+    <strong style="display:block; margin-bottom:10px; color:var(--primary);">📝 稼働記録の追加</strong>
+    <div class="input-group" style="background:#f4fdf8; border-color:#d1f4e0;">
+      <input type="date" id="uber-date" style="max-width:140px;">
+      <input type="time" id="uber-start"> 〜 <input type="time" id="uber-end">
+      <input type="number" id="uber-earned" placeholder="売上(円)" style="max-width:120px;">
+      <input type="number" id="uber-dels" placeholder="配達件数" style="max-width:100px;">
+      <input type="text" id="uber-memo" placeholder="メモ(天候,エリア等)">
+      <button class="action-btn uber-btn" onclick="addUberRecord()">記録</button>
+    </div>
+
+    <div style="background:#fff; border-radius:8px; border:1px solid var(--border); overflow-x:auto; margin-bottom:40px;">
+      <table class="premium-table">
+        <thead><tr><th>日付</th><th>時間(稼働)</th><th>件数</th><th>売上</th><th>時給/単価目安</th><th>メモ</th><th>操作</th></tr></thead>
+        <tbody id="uber-list"></tbody>
+      </table>
+    </div>
+
+    <!-- 固定バイト用セクション -->
+    <div class="section-title">🏢 固定バイト タイムカード</div>
+    <div class="punch-card">
+      <button class="punch-btn punch-in" onclick="punchClock('in')">☀️ 出勤 (打刻)</button>
+      <button class="punch-btn punch-out" onclick="punchClock('out')">🌙 退勤 (打刻)</button>
+    </div>
+    <div style="text-align:center; margin-bottom:25px; font-size:15px; background:#fff; padding:15px; border-radius:8px; border:1px solid var(--border);" id="current-punch-status">現在打刻なし</div>
+
+    <div style="background:#f9fafb; padding:20px; border-radius:8px; border:1px solid var(--border); margin-bottom:25px;">
+      <strong style="display:block; margin-bottom:10px; color:var(--primary);">💼 バイト先の設定（時給）</strong>
+      <div style="display:flex; gap:10px; flex-wrap:wrap;">
+        <input type="text" id="job-name" placeholder="バイト先名">
+        <input type="number" id="job-wage" placeholder="時給(円)">
+        <button class="action-btn gold-btn" onclick="addJob()">追加</button>
+      </div>
+      <ul id="job-list" style="margin-top:15px;"></ul>
+    </div>
+
+    <strong style="display:block; margin-bottom:10px; color:var(--primary);">📝 勤務履歴（手動追加）</strong>
+    <div class="input-group">
+      <input type="date" id="work-date">
+      <select id="work-job"></select>
+      <input type="time" id="work-start"> 〜 <input type="time" id="work-end">
+      <button class="action-btn" onclick="addWorkRecord()">記録</button>
+    </div>
+    <div style="background:#fff; border-radius:8px; border:1px solid var(--border); overflow-x:auto;">
+      <table class="premium-table">
+        <thead><tr><th>日付</th><th>バイト先</th><th>時間</th><th>稼ぎ(目安)</th><th>操作</th></tr></thead>
+        <tbody id="work-list"></tbody>
+      </table>
+    </div>
+
+    <!-- 合算グラフ -->
+    <div style="margin-top:40px; padding-top:20px; border-top:1px solid var(--border);">
+      <strong style="display:block; margin-bottom:5px; font-size:18px; color:var(--primary);">📊 月別 給与推移 (固定バイト ＋ Uber 合算)</strong>
+      <canvas id="wageChart" style="max-height: 300px;"></canvas>
+    </div>
+  </div>
+
+  <!-- ==============================================
+       🔄 習慣トラッカー
+       ============================================== -->
+  <div id="habit" class="content">
+    <div class="section-title">習慣トラッカー (直近7日間)</div>
+    <div class="input-group">
+      <input type="text" id="habit-input" placeholder="習慣にしたいこと（例：筋トレ、読書）">
+      <button class="action-btn gold-btn" onclick="addHabit()">追加</button>
+    </div>
+    <div style="overflow-x:auto; background:#fff; padding:15px; border-radius:8px; border:1px solid var(--border);">
+      <table class="habit-table"><thead id="habit-head"></thead><tbody id="habit-body"></tbody></table>
+    </div>
+  </div>
+
+  <!-- ==============================================
+       🛒 備品管理
+       ============================================== -->
+  <div id="equipment" class="content">
+    <div class="section-title">備品リスト <button class="action-btn" style="font-size: 12px; padding: 8px 15px;" onclick="sendAllEqToLine()">📱 全エリアの備品をLINEに送信</button></div>
+    <div class="sub-tabs" id="eq-tabs"></div>
+    <div style="margin-bottom: 25px; display: flex; gap: 10px;">
+      <button class="sub-tab-btn" style="border-style: dashed;" onclick="addEqArea()">＋ エリアを追加</button>
+      <button class="sub-tab-btn" style="border-style: dashed; color: var(--danger);" onclick="deleteEqArea()">🗑️ 現在のエリアを削除</button>
+    </div>
+    <div class="input-group">
+      <input type="text" id="eq-input" placeholder="備品名">
+      <input type="number" id="eq-count" placeholder="個数" value="1" style="max-width: 100px;">
+      <button class="action-btn gold-btn" onclick="addEq()">追加</button>
+    </div>
+    <ul id="eq-list"></ul>
+  </div>
+
+  <!-- ==============================================
+       🛍️ 買い物リスト
+       ============================================== -->
+  <div id="shopping" class="content">
+    <h2 class="section-title">買い物リスト ＆ カゴ</h2>
+    <div class="input-group">
+      <input type="text" id="shop-input" placeholder="買うもの" style="flex-grow: 2;">
+      <input type="number" id="shop-qty" placeholder="個数" value="1" style="max-width: 80px;">
+      <input type="number" id="shop-price" placeholder="予定価格(任意)" style="max-width: 120px;">
+      <button class="action-btn gold-btn" onclick="addShop()">追加</button>
+    </div>
+    <div class="shop-area">
+      <div class="shop-box"><h3>📋 買うものリスト</h3><ul id="shop-list-pending" style="min-height: 100px;"></ul></div>
+      <div class="shop-box" style="background: #fdfaf3; border-color: #f6e8c3;">
+        <h3>🛒 カゴの中身</h3>
+        <ul id="shop-list-cart" style="min-height: 100px;"></ul>
+        <div id="checkout-area" style="display: none; margin-top: 20px; padding-top: 20px; border-top: 2px dashed #d1d5db; text-align: center;">
+          <div style="font-size: 20px; font-weight: bold; color: var(--primary); margin-bottom: 15px;">TOTAL <span id="shop-total" style="color: var(--gold); font-size: 28px;">¥ 0</span></div>
+          <select id="shop-payment" style="margin-bottom: 15px; width: 100%; font-size: 16px; padding: 10px;">
+            <option value="現金">現金</option><option value="クレジットカード">クレジットカード</option><option value="PayPay">PayPay</option>
+          </select>
+          <button class="action-btn" style="width: 100%; font-size: 16px; padding: 15px;" onclick="checkoutShopping()">買い物を完了する ＆ 家計簿へ</button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ==============================================
+       🏦 家計簿
+       ============================================== -->
+  <div id="finance" class="content">
+    <div class="section-title">家計簿帳 <button class="action-btn" style="font-size: 12px; padding: 8px 15px;" onclick="sendMonthlyReport()">📱 当月の収支をLINEに送信</button></div>
+    <div class="finance-dash">
+      <div class="fin-card"><h4>当月 収入</h4><div class="amount income" id="dash-income">¥ 0</div></div>
+      <div class="fin-card"><h4>当月 支出</h4><div class="amount expense" id="dash-expense">¥ 0</div></div>
+      <div class="fin-card" style="background: var(--primary);"><h4 style="color: var(--gold);">総合残高</h4><div class="amount" id="dash-total" style="color: #fff;">¥ 0</div></div>
+    </div>
+    <div class="input-group">
+      <select id="fin-type" style="max-width: 100px;"><option value="expense">支出</option><option value="income">収入</option></select>
+      <input type="date" id="fin-date">
+      <input type="text" id="fin-name" placeholder="項目名">
+      <select id="fin-method" style="max-width: 140px;"><option value="-">支払方法(任意)</option><option value="現金">現金</option><option value="クレジットカード">クレジットカード</option><option value="PayPay">PayPay</option><option value="銀行振込">銀行振込</option></select>
+      <input type="number" id="fin-amount" placeholder="金額" style="max-width: 120px;">
+      <button class="action-btn gold-btn" onclick="addFinance()">記帳</button>
+    </div>
+    <div style="background: #fff; padding: 20px; border-radius: 8px; border: 1px solid var(--border); overflow-x: auto;">
+      <table class="premium-table">
+        <thead><tr><th width="15%">日付</th><th width="25%">摘要</th><th width="15%">支払方法</th><th width="15%">お支払</th><th width="15%">お預り</th><th width="15%">残高</th></tr></thead>
+        <tbody id="finance-list"></tbody>
+      </table>
+    </div>
+  </div>
+
+  <!-- ==============================================
+       📄 レポート
+       ============================================== -->
+  <div id="report" class="content">
+    <h2 class="section-title">レポート作成支援</h2>
+    <div class="input-group" style="background: transparent; border: none; padding: 0;">
+      <button class="action-btn" style="background: #3b82f6; border-color: #3b82f6;" onclick="window.open('https://notebooklm.google.com/', '_blank')">NotebookLM を開く ↗</button>
+    </div>
+    <div style="margin-top: 20px;">
+      <div style="display: flex; justify-content: space-between; margin-bottom: 10px; align-items: flex-end;">
+        <strong style="color: var(--primary); font-size: 18px;">下書きメモ ＆ 誤字チェック</strong>
+        <span style="font-size: 16px; color: var(--text-light); font-weight: bold;"><span id="char-count" style="font-size: 24px; color: var(--primary);">0</span> 文字</span>
+      </div>
+      <textarea id="report-memo" rows="15" oninput="checkTypos(this)" placeholder="ここに構成や文章を入力...&#10;※改行は文字数に含まれません。絵文字も正確にカウントされます。" style="width: 100%; box-sizing: border-box; min-height: 400px; font-size: 16px; padding: 20px; line-height: 1.8; border-radius: 8px;"></textarea>
+      <div id="typo-alert" class="typo-warning"></div>
+    </div>
+    <div style="margin-top: 40px; padding-top: 20px; border-top: 1px solid var(--border);">
+      <strong style="color: var(--primary);">参考文献 ジェネレーター</strong>
+      <textarea id="ref-input" rows="3" placeholder="URLを改行で複数貼り付け" style="margin-top: 10px;"></textarea>
+      <button class="action-btn gold-btn" style="margin-top: 10px;" onclick="generateRefs()">形式変換</button>
+      <textarea id="ref-output" rows="3" style="margin-top: 10px; background: #f9fafb;" readonly placeholder="結果がここに出ます"></textarea>
+    </div>
+  </div>
+
+  <!-- ==============================================
+       🎓 リンク集
+       ============================================== -->
+  <div id="links" class="content">
+    <h2 class="section-title">ランチャー（リンク集）</h2>
+    <div class="input-group">
+      <input type="text" id="link-name" placeholder="サイト名">
+      <input type="text" id="link-url" placeholder="URL (https://...)">
+      <button class="action-btn gold-btn" onclick="addLink()">追加</button>
+    </div>
+    <ul id="links-list"></ul>
+  </div>
+
+  <!-- ==============================================
+       ⚙️ 設定
+       ============================================== -->
+  <div id="settings" class="content">
+    <h2 class="section-title">システム設定 ＆ データ保護</h2>
+    <div style="margin-bottom: 30px; background: #fdfaf3; padding: 20px; border-radius: 8px; border: 1px solid #f6e8c3;">
+      <h3 style="margin-top: 0; font-size: 16px; color: #9a3412;">LINE通知の設定（全機能共通）</h3>
+      <p style="font-size:12px; color:var(--text-light); margin-bottom:15px;">※毎日の予定＆ToDoリマインド時刻もここで設定します</p>
+      <label style="font-size:14px; font-weight:bold;">自動リマインド送信時刻:</label>
+      <input type="time" id="setting-notify-time" style="width:150px; margin-bottom:15px; display:block;">
+      <label style="font-size:14px; font-weight:bold;">LINE Notify URL:</label>
+      <input type="text" id="setting-gas-url" placeholder="https://script.google.com/macros/s/..." style="width: 100%; box-sizing: border-box; margin-bottom: 15px;">
+      <div style="display: flex; gap: 10px;">
+        <button class="action-btn" onclick="saveSettings()">設定を保存</button>
+        <button class="action-btn gold-btn" onclick="testLineNotify()">通知をテスト送信 🚀</button>
+      </div>
+    </div>
+    <div style="background: #f9fafb; padding: 20px; border-radius: 8px; border: 1px solid var(--border);">
+      <h3 style="margin-top: 0; font-size: 16px; color: var(--primary);">データのバックアップ</h3>
+      <div style="display: flex; gap: 10px;">
+        <button class="action-btn" style="background: var(--success); border-color: var(--success);" onclick="exportData()">データを書き出す</button>
+        <button class="action-btn" style="background: var(--danger); border-color: var(--danger);" onclick="importData()">データを読み込む</button>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    // ==========================================
+    // Firebase 初期化
+    // ==========================================
+    const firebaseConfig = {
+      apiKey: "AIzaSyAt6b0Qw2RC2AoRGVOqdw_FYW2K4K2cjBE",
+      authDomain: "benri-site.firebaseapp.com",
+      projectId: "benri-site",
+      storageBucket: "benri-site.firebasestorage.app",
+      messagingSenderId: "163944083212",
+      appId: "1:163944083212:web:4582760d151f60ee852329"
+    };
+    firebase.initializeApp(firebaseConfig);
+    const auth = firebase.auth(); const db = firebase.firestore();
+
+    let currentUser = null;
+    let appData = {
+      todos: [], equipments: { 'リビング':[] }, shopping: [], finance: [], links: [],
+      gasUrl: '', notifyTime: '07:00', lastDailyNotify: '',
+      schedules: [], categories: [{ id: 'baito', name: 'バイト', color: '#ef4444' }, { id: 'normal', name: '通常の予定', color: '#3b82f6' }],
+      jobs: [], workRecords: [], uberRecords: [], habits: [], habitLogs: {},
+      punchState: { active: false, startTime: null, jobId: null, date: null }
+    };
+
+    auth.onAuthStateChanged(user => {
+      const loginScreen = document.getElementById('login-screen');
+      if (user) { currentUser = user; document.getElementById('user-display-email').innerText = `ログイン中: ${user.email}`; loginScreen.style.display = 'none'; loadUserData(); } 
+      else { currentUser = null; loginScreen.style.display = 'flex'; }
+    });
+    function loginUser() { auth.signInWithEmailAndPassword(document.getElementById('auth-email').value, document.getElementById('auth-password').value).catch(err => document.getElementById('auth-error').innerText = '失敗: ' + err.message); }
+    function signupUser() { auth.createUserWithEmailAndPassword(document.getElementById('auth-email').value, document.getElementById('auth-password').value).then(() => alert('作成しました')).catch(err => document.getElementById('auth-error').innerText = '失敗: ' + err.message); }
+    function logoutUser() { auth.signOut().then(() => location.reload()); }
+
+    function loadUserData() {
+      if (!currentUser) return;
+      db.collection('users').doc(currentUser.uid).get().then(doc => {
+        if (doc.exists) { appData = { ...appData, ...doc.data() }; if(!appData.uberRecords) appData.uberRecords = []; } else { saveData(); }
+        refreshAllViews(); checkDailyReminders();
+      });
+    }
+    function saveData() { if (currentUser) db.collection('users').doc(currentUser.uid).set(appData); updateExpectedWage(); }
+
+    function refreshAllViews() {
+      document.getElementById('fin-date').value = new Date().toISOString().split('T')[0];
+      document.getElementById('uber-date').value = new Date().toISOString().split('T')[0];
+      document.getElementById('setting-gas-url').value = appData.gasUrl || '';
+      document.getElementById('setting-notify-time').value = appData.notifyTime || '07:00';
+      
+      renderCalendar(); renderJobs(); renderWorkRecords(); updatePunchStatus(); renderUberRecords(); renderHabits();
+      renderTodos(); initEqTabs(); renderEq(); renderShopping(); renderFinance(); renderLinks(); updateExpectedWage();
+    }
+    function switchTab(tabId, btn) {
+      document.querySelectorAll('.content').forEach(el => el.classList.remove('active')); document.querySelectorAll('.tab-btn').forEach(el => el.classList.remove('active'));
+      document.getElementById(tabId).classList.add('active'); if(btn) btn.classList.add('active');
+    }
+    function sendLineNotify(message) { if(!appData.gasUrl) return; fetch(appData.gasUrl, { method: 'POST', mode: 'no-cors', headers: { 'Content-Type': 'application/x-www-form-urlencoded' }, body: 'message=' + encodeURIComponent(message) }); }
+
+    // ==========================================
+    // カレンダー
+    // ==========================================
+    let currentCalDate = new Date();
+    function changeMonth(diff) { currentCalDate.setMonth(currentCalDate.getMonth() + diff); renderCalendar(); }
+    function renderCalendar() {
+      const year = currentCalDate.getFullYear(); const month = currentCalDate.getMonth();
+      document.getElementById('cal-month-title').innerText = `${year}年${month + 1}月`;
+      const firstDay = new Date(year, month, 1); const lastDay = new Date(year, month + 1, 0);
+      const grid = document.getElementById('cal-grid');
+      let html = ['日','月','火','水','木','金','土'].map(d => `<div class="cal-head-cell">${d}</div>`).join('');
+      for(let i = 0; i < firstDay.getDay(); i++) { html += `<div class="cal-cell" style="background:#f9fafb;"></div>`; }
+      const todayStr = new Date().toLocaleDateString('sv-SE');
+      
+      for(let d = 1; d <= lastDay.getDate(); d++) {
+        const dateStr = `${year}-${String(month+1).padStart(2,'0')}-${String(d).padStart(2,'0')}`;
+        const isToday = dateStr === todayStr ? 'cal-today' : '';
+        const dayEvents = (appData.schedules || []).filter(s => s.date === dateStr).sort((a,b)=> (a.start||'').localeCompare(b.start||''));
+        let eventsHtml = dayEvents.map(e => {
+          const cat = (appData.categories||[]).find(c=>c.id===e.catId) || {name:'予定', color:'#666'};
+          const title = e.catId === 'baito' ? `[ﾊﾞｲﾄ] ${getJobName(e.jobId)} ${e.start}~${e.end}` : `${e.start||''} ${e.title}`;
+          return `<div class="event-badge" style="background:${cat.color};">${title}</div>`;
+        }).join('');
+        const uberEvents = (appData.uberRecords||[]).filter(u => u.date === dateStr);
+        uberEvents.forEach(u => { eventsHtml += `<div class="event-badge" style="background:var(--uber);">Uber: ¥${u.earned.toLocaleString()}</div>`; });
+
+        html += `<div class="cal-cell ${isToday}" onclick="openModal('${dateStr}')"><div class="cal-date">${d}</div>${eventsHtml}</div>`;
+      }
+      grid.innerHTML = html;
     }
 
-    // ダークモード切替処理
-    document.getElementById('ext-dark-mode').addEventListener('change', function(e) {
-      const root = document.documentElement;
-      if(e.target.checked) {
-        root.style.setProperty('--bg-color', '#111827');
-        root.style.setProperty('--surface', '#1f2937');
-        root.style.setProperty('--text', '#f9fafb');
-        root.style.setProperty('--border', '#374151');
-        root.style.setProperty('--primary', '#ffffff');
-      } else {
-        root.style.setProperty('--bg-color', '#f3f4f6');
-        root.style.setProperty('--surface', '#ffffff');
-        root.style.setProperty('--text', '#1f2937');
-        root.style.setProperty('--border', '#e5e7eb');
-        root.style.setProperty('--primary', '#111827');
+    function openModal(dateStr) {
+      document.getElementById('modal-date-display').innerText = dateStr; document.getElementById('modal-date-val').value = dateStr;
+      document.getElementById('modal-bulk-check').checked = false; toggleBulkAdd();
+      document.getElementById('modal-sch-cat').innerHTML = (appData.categories||[]).map(c => `<option value="${c.id}">${c.name}</option>`).join('');
+      document.getElementById('modal-sch-job').innerHTML = (appData.jobs||[]).map(j => `<option value="${j.id}">${j.name}</option>`).join('');
+      toggleSchFields(); renderModalEvents(dateStr);
+      document.getElementById('modal-content-sch').style.display = 'block'; document.getElementById('modal-content-cat').style.display = 'none'; document.getElementById('modal-overlay').style.display = 'flex';
+    }
+    function closeModal() { document.getElementById('modal-overlay').style.display = 'none'; }
+    function toggleSchFields() { const catId = document.getElementById('modal-sch-cat').value; document.getElementById('modal-sch-title').style.display = catId === 'baito' ? 'none' : 'block'; document.getElementById('modal-sch-job').style.display = catId === 'baito' ? 'block' : 'none'; }
+    function toggleBulkAdd() { document.getElementById('bulk-add-area').style.display = document.getElementById('modal-bulk-check').checked ? 'block' : 'none'; }
+    function saveSchedule() {
+      const startDateStr = document.getElementById('modal-date-val').value, catId = document.getElementById('modal-sch-cat').value, title = document.getElementById('modal-sch-title').value, jobId = document.getElementById('modal-sch-job').value, start = document.getElementById('modal-sch-start').value, end = document.getElementById('modal-sch-end').value, isBulk = document.getElementById('modal-bulk-check').checked;
+      if(catId !== 'baito' && !title) return alert('タイトルを入力してください'); if(catId === 'baito' && (!jobId || !start || !end)) return alert('バイト先と時間を入力してください');
+      let targetDates = [startDateStr];
+      if(isBulk) {
+        const endDateStr = document.getElementById('modal-bulk-end').value; if(!endDateStr) return alert('終了日を指定');
+        const checkedDays = Array.from(document.querySelectorAll('.bulk-day:checked')).map(cb => parseInt(cb.value)); if(checkedDays.length === 0) return alert('曜日を選択');
+        targetDates = []; let curr = new Date(startDateStr); const endD = new Date(endDateStr);
+        while(curr <= endD) { if(checkedDays.includes(curr.getDay())) targetDates.push(curr.toLocaleDateString('sv-SE')); curr.setDate(curr.getDate()+1); }
       }
-    });
-  }
-});
-</script>
+      targetDates.forEach(date => { appData.schedules.push({ id: Date.now().toString() + Math.random().toString(36).substr(2, 5), date, catId, title, jobId, start, end }); });
+      saveData(); renderCalendar(); updateExpectedWage(); if(!isBulk) renderModalEvents(startDateStr); else { closeModal(); alert(`${targetDates.length}件登録`); }
+    }
+    function renderModalEvents(dateStr) {
+      const list = document.getElementById('modal-sch-list'); const events = (appData.schedules || []).filter(s => s.date === dateStr);
+      list.innerHTML = events.map(e => {
+        const title = e.catId === 'baito' ? `[バイト] ${getJobName(e.jobId)} ${e.start}~${e.end}` : `[予定] ${e.title} ${e.start||''}~${e.end||''}`;
+        return `<li><span>${title}</span> <button class="delete-btn" onclick="deleteSchedule('${e.id}', '${dateStr}')">削除</button></li>`;
+      }).join('');
+    }
+    function deleteSchedule(id, dateStr) { appData.schedules = appData.schedules.filter(s => s.id !== id); saveData(); renderModalEvents(dateStr); renderCalendar(); updateExpectedWage(); }
+    function openCategoryModal() { renderCategories(); document.getElementById('modal-content-sch').style.display = 'none'; document.getElementById('modal-content-cat').style.display = 'block'; document.getElementById('modal-overlay').style.display = 'flex'; }
+    function renderCategories() { document.getElementById('cat-list').innerHTML = (appData.categories||[]).map(c => `<li style="border-left:5px solid ${c.color};"><span style="font-weight:bold;">${c.name}</span>${c.id==='baito'?'<span style="font-size:11px;color:#999;">(固定)</span>':`<button class="delete-btn" onclick="deleteCategory('${c.id}')">削除</button>`}</li>`).join(''); }
+    function addCategory() { const name = document.getElementById('cat-name-input').value, color = document.getElementById('cat-color-input').value; if(!name) return; appData.categories.push({ id: 'cat_'+Date.now(), name, color }); document.getElementById('cat-name-input').value = ''; saveData(); renderCategories(); }
+    function deleteCategory(id) { if(id==='baito') return; appData.categories = appData.categories.filter(c=>c.id!==id); saveData(); renderCategories(); }
+    function sendTodayScheduleToLine() {
+      const todayStr = new Date().toLocaleDateString('sv-SE');
+      let msg = `📅【${todayStr} の予定確認】\n`;
+      const events = (appData.schedules || []).filter(s => s.date === todayStr);
+      if (events.length > 0) {
+        events.forEach(e => {
+          if (e.catId === 'baito') msg += `・🏢バイト: ${getJobName(e.jobId)} (${e.start}~${e.end})\n`;
+          else msg += `・予定: ${e.title} ${e.start ? `(${e.start}${e.end ? '~' + e.end : ''})` : ''}\n`;
+        });
+      } else {
+        msg += "本日の予定はありません。\n";
+      }
+      const uberEvents = (appData.uberRecords || []).filter(u => u.date === todayStr);
+      uberEvents.forEach(u => { msg += `・🚴‍♂️Uber: ¥${u.earned.toLocaleString()}\n`; });
+      sendLineNotify(msg);
+      alert('今日の予定をLINEに送信しました！');
+    }
+
+    // ==========================================
+    // ⏰ バイト ＆ Uber ＆ 見込み給与
+    // ==========================================
+    function updateExpectedWage() {
+      const now = new Date();
+      // YYYY-MM形式を取得 (現在月)
+      const currMonth = `${now.getFullYear()}-${String(now.getMonth()+1).padStart(2,'0')}`;
+      let expectedTotal = 0;
+      
+      (appData.schedules || []).forEach(s => {
+        // バイトの予定であり、かつ当月の予定であれば計算に含める
+        if (s.catId === 'baito' && s.date.startsWith(currMonth)) {
+          expectedTotal += calcWage(s.jobId, s.start, s.end);
+        }
+      });
+      
+      const displayEl = document.getElementById('expected-wage-display');
+      if (displayEl) {
+        displayEl.innerText = `¥ ${expectedTotal.toLocaleString()}`;
+      }
+    }
+
+    function calcUberChecker() {
+      const price = parseFloat(document.getElementById('uber-check-price').value);
+      const dist = parseFloat(document.getElementById('uber-check-dist').value);
+      const time = parseFloat(document.getElementById('uber-check-time').value);
+      const res = document.getElementById('uber-check-result');
+      if(!price) return res.innerText = '金額を入力してください';
+      let text = [];
+      if(dist) text.push(`距離単価: ¥${Math.round(price/dist)}/km`);
+      if(time) text.push(`時給換算: ¥${Math.round(price / (time/60))}/h`);
+      res.innerText = text.length > 0 ? text.join(' ｜ ') : '距離か時間を入力';
+    }
+
+    function addUberRecord() {
+      const d = document.getElementById('uber-date').value, s = document.getElementById('uber-start').value, e = document.getElementById('uber-end').value, earned = parseInt(document.getElementById('uber-earned').value), dels = parseInt(document.getElementById('uber-dels').value) || 0, memo = document.getElementById('uber-memo').value;
+      if(!d || !earned) return alert('日付と売上は必須です');
+      appData.uberRecords.push({ id: 'ub_'+Date.now(), date: d, start: s, end: e, earned, deliveries: dels, memo });
+      document.getElementById('uber-earned').value=''; document.getElementById('uber-dels').value=''; document.getElementById('uber-memo').value='';
+      saveData(); renderUberRecords(); renderWorkRecords();
+    }
+    function renderUberRecords() {
+      const list = document.getElementById('uber-list');
+      const sorted = [...(appData.uberRecords||[])].sort((a,b)=> new Date(b.date)-new Date(a.date));
+      list.innerHTML = sorted.slice(0, 30).map(u => {
+        let tH = 0;
+        if(u.start && u.end) {
+          const [sH, sM] = u.start.split(':').map(Number); const [eH, eM] = u.end.split(':').map(Number);
+          tH = (eH + eM/60) - (sH + sM/60); if(tH < 0) tH += 24;
+        }
+        const hourly = tH > 0 ? `時給:¥${Math.round(u.earned/tH).toLocaleString()}` : '-';
+        const perDel = u.deliveries > 0 ? `単価:¥${Math.round(u.earned/u.deliveries).toLocaleString()}` : '-';
+        return `<tr><td>${u.date}</td><td>${u.start||'-'}~${u.end||'-'} ${tH>0?`(${tH.toFixed(1)}h)`:''}</td><td>${u.deliveries}件</td><td style="color:var(--uber); font-weight:bold;">¥${u.earned.toLocaleString()}</td><td style="font-size:12px; color:var(--text-light);">${hourly}<br>${perDel}</td><td style="font-size:12px;">${u.memo||''}</td><td><button class="delete-btn" onclick="appData.uberRecords=appData.uberRecords.filter(x=>x.id!=='${u.id}');saveData();renderUberRecords();renderWorkRecords();">×</button></td></tr>`;
+      }).join('');
+    }
+
+    function getJobName(id) { const j = (appData.jobs||[]).find(x => x.id === id); return j ? j.name : '不明'; }
+    function renderJobs() {
+      const list = document.getElementById('job-list'); const sel = document.getElementById('work-job'); list.innerHTML = ''; sel.innerHTML = '';
+      (appData.jobs||[]).forEach(j => { list.innerHTML += `<li style="flex: 1 1 200px;"><span>${j.name} (時給¥${j.wage})</span> <button class="delete-btn" onclick="deleteJob('${j.id}')">×</button></li>`; sel.innerHTML += `<option value="${j.id}">${j.name}</option>`; });
+    }
+    function addJob() { const name = document.getElementById('job-name').value, wage = parseInt(document.getElementById('job-wage').value); if(!name || !wage) return; appData.jobs.push({ id: Date.now().toString(), name, wage }); document.getElementById('job-name').value=''; document.getElementById('job-wage').value=''; saveData(); renderJobs(); updateExpectedWage(); }
+    function deleteJob(id) { appData.jobs = appData.jobs.filter(j => j.id !== id); saveData(); renderJobs(); updateExpectedWage(); }
+    function punchClock(type) {
+      if(!appData.jobs || appData.jobs.length === 0) return alert('バイト先を設定してください');
+      const now = new Date(); const timeStr = String(now.getHours()).padStart(2,'0') + ':' + String(now.getMinutes()).padStart(2,'0');
+      if(type === 'in') {
+        if(appData.punchState?.active) return alert('すでに出勤中です');
+        const jobIdx = prompt("どのバイトに出勤しますか？(番号入力)\n" + appData.jobs.map((j,i)=>`${i+1}: ${j.name}`).join(' / '));
+        const selJob = appData.jobs[parseInt(jobIdx)-1]; if(!selJob) return alert('キャンセルしました');
+        appData.punchState = { active: true, startTime: timeStr, jobId: selJob.id, date: now.toLocaleDateString('sv-SE') }; saveData(); updatePunchStatus();
+      } else {
+        if(!appData.punchState?.active) return alert('出勤していません');
+        const p = appData.punchState; const earned = calcWage(p.jobId, p.startTime, timeStr);
+        appData.workRecords.push({ id: Date.now().toString(), date: p.date, jobId: p.jobId, start: p.startTime, end: timeStr, earned });
+        appData.punchState = { active: false }; saveData(); updatePunchStatus(); renderWorkRecords(); alert(`退勤しました。\n目安稼ぎ: ¥${earned}`);
+      }
+    }
+    function updatePunchStatus() {
+      const el = document.getElementById('current-punch-status');
+      if(appData.punchState?.active) el.innerHTML = `<span style="color:var(--success); font-weight:bold;">🟢 勤務中: ${getJobName(appData.punchState.jobId)} (${appData.punchState.startTime}〜)</span>`;
+      else el.innerText = '現在打刻なし';
+    }
+    function calcWage(jobId, start, end) {
+      const job = (appData.jobs||[]).find(j => j.id === jobId); if(!job || !start || !end) return 0;
+      const [sH, sM] = start.split(':').map(Number); const [eH, eM] = end.split(':').map(Number);
+      let diffH = (eH + eM/60) - (sH + sM/60); if(diffH < 0) diffH += 24; return Math.round(diffH * job.wage);
+    }
+    function addWorkRecord() {
+      const d = document.getElementById('work-date').value, j = document.getElementById('work-job').value, s = document.getElementById('work-start').value, e = document.getElementById('work-end').value;
+      if(!d||!j||!s||!e) return; appData.workRecords.push({ id: Date.now().toString(), date: d, jobId: j, start: s, end: e, earned: calcWage(j, s, e) }); saveData(); renderWorkRecords();
+    }
+    
+    let wageChartInstance = null;
+    function renderWorkRecords() {
+      const list = document.getElementById('work-list');
+      const sorted = [...(appData.workRecords||[])].sort((a,b)=> new Date(b.date)-new Date(a.date));
+      list.innerHTML = sorted.slice(0, 30).map(w => `<tr><td>${w.date}</td><td>${getJobName(w.jobId)}</td><td>${w.start}~${w.end}</td><td style="color:var(--gold); font-weight:bold;">¥${w.earned.toLocaleString()}</td><td><button class="delete-btn" onclick="appData.workRecords=appData.workRecords.filter(x=>x.id!=='${w.id}');saveData();renderWorkRecords()">×</button></td></tr>`).join('');
+      
+      const ctx = document.getElementById('wageChart').getContext('2d');
+      if (wageChartInstance) wageChartInstance.destroy();
+      const mDataWork = {}; const mDataUber = {}; const labels = [];
+      for(let i=5; i>=0; i--) { const d=new Date(); d.setMonth(d.getMonth()-i); const k=`${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,'0')}`; labels.push(k); mDataWork[k]=0; mDataUber[k]=0; }
+      
+      (appData.workRecords||[]).forEach(w => { const mk = w.date.slice(0,7); if(mDataWork[mk]!==undefined) mDataWork[mk]+=w.earned; });
+      (appData.uberRecords||[]).forEach(u => { const mk = u.date.slice(0,7); if(mDataUber[mk]!==undefined) mDataUber[mk]+=u.earned; });
+
+      wageChartInstance = new Chart(ctx, { 
+        type: 'bar', 
+        data: { 
+          labels: labels, 
+          datasets: [
+            { label: '固定バイト (円)', data: labels.map(l=>mDataWork[l]), backgroundColor: '#D4AF37' },
+            { label: 'Uber Eats (円)', data: labels.map(l=>mDataUber[l]), backgroundColor: '#06C167' }
+          ] 
+        }, 
+        options: { 
+          responsive: true, maintainAspectRatio: false, 
+          scales: { x: { stacked: true }, y: { stacked: true } }
+        } 
+      });
+    }
+
+    // ==========================================
+    // 習慣・ToDo・備品・買い物・家計簿・その他
+    // ==========================================
+    function renderHabits() {
+      const head = document.getElementById('habit-head'); const body = document.getElementById('habit-body');
+      const days = []; for(let i=6; i>=0; i--) { const d = new Date(); d.setDate(d.getDate()-i); days.push(d.toLocaleDateString('sv-SE')); }
+      head.innerHTML = `<tr><th>習慣</th>${days.map(d => `<th>${d.slice(5).replace('-','/')}</th>`).join('')}</tr>`;
+      body.innerHTML = (appData.habits||[]).map(h => {
+        const cells = days.map(d => { const chk = (appData.habitLogs[d]||[]).includes(h.id); return `<td><input type="checkbox" class="habit-check" ${chk?'checked':''} onchange="toggleHabit('${h.id}','${d}',this.checked)"></td>`; }).join('');
+        return `<tr><td>${h.name} <button class="delete-btn" style="float:right;" onclick="appData.habits=appData.habits.filter(x=>x.id!=='${h.id}');saveData();renderHabits()">×</button></td>${cells}</tr>`;
+      }).join('');
+    }
+    function addHabit() { const v = document.getElementById('habit-input').value; if(!v) return; appData.habits.push({id:Date.now().toString(), name:v}); document.getElementById('habit-input').value=''; saveData(); renderHabits(); }
+    function toggleHabit(hId, dateStr, chk) { if(!appData.habitLogs[dateStr]) appData.habitLogs[dateStr]=[]; if(chk) appData.habitLogs[dateStr].push(hId); else appData.habitLogs[dateStr]=appData.habitLogs[dateStr].filter(id=>id!==hId); saveData(); }
+
+    function checkDailyReminders() {
+      if (!appData.gasUrl) return; const now = new Date(); const todayStr = now.toLocaleDateString('sv-SE'); if (appData.lastDailyNotify === todayStr) return;
+      const setTime = appData.notifyTime || '07:00'; const [setH, setM] = setTime.split(':').map(Number);
+      if (now.getHours() > setH || (now.getHours() === setH && now.getMinutes() >= setM)) {
+        let msg = `📅【${todayStr} のお知らせ】\n\n`;
+        const events = (appData.schedules || []).filter(s => s.date === todayStr);
+        if(events.length > 0) { msg += "📌 今日の予定:\n"; events.forEach(e => { if (e.catId === 'baito') msg += `・🏢バイト: ${getJobName(e.jobId)} (${e.start}~${e.end})\n`; else msg += `・予定: ${e.title} ${e.start?`(${e.start}~)`:''}\n`; }); msg += "\n"; } else { msg += "📌 今日の予定: なし\n\n"; }
+        const activeTodos = (appData.todos || []).filter(t => !t.done && t.date); const todayMidnight = new Date(now.getFullYear(), now.getMonth(), now.getDate()); let todoAdded = false;
+        activeTodos.forEach(t => { const dDate = new Date(t.date); const dMid = new Date(dDate.getFullYear(), dDate.getMonth(), dDate.getDate()); const diffDays = Math.round((dMid - todayMidnight) / (1000 * 60 * 60 * 24));
+          if (diffDays >= 0 && diffDays <= 7) { if(!todoAdded){ msg += "🚨 期限が近いToDo:\n"; todoAdded = true; } msg += `・${t.text} (${diffDays===0?'本日!':`あと${diffDays}日`})\n`; } });
+        sendLineNotify(msg); appData.lastDailyNotify = todayStr; saveData();
+      }
+    }
+
+    function sendActiveTodosToLine() { const activeTodos = (appData.todos || []).filter(t => !t.done); if (activeTodos.length === 0) return alert('未完了のToDoはありません！'); let msg = "📝【未完了ToDoリスト】\n" + activeTodos.map(t => `・${t.text}${t.date ? ` (期日: ${t.date.replace('T', ' ')})` : ''}`).join('\n'); sendLineNotify(msg); alert('LINEに送信しました！'); }
+    function renderTodos() {
+      const activeList = document.getElementById('todo-list-active'); const doneList = document.getElementById('todo-list-done'); activeList.innerHTML = ''; doneList.innerHTML = ''; const now = new Date();
+      const sortedTodos = [...(appData.todos || [])].sort((a, b) => { if (!a.date && !b.date) return 0; if (!a.date) return 1; if (!b.date) return -1; return new Date(a.date) - new Date(b.date); });
+      sortedTodos.forEach(todo => {
+        let cls = '', badge = '';
+        if (todo.date && !todo.done) { const diffDays = (new Date(todo.date) - now) / (1000 * 60 * 60 * 24); if (diffDays <= 7) { cls = 'priority-high'; badge = '<span style="background:var(--danger);color:white;padding:2px 8px;border-radius:4px;font-size:11px;">高</span>'; } else if (diffDays <= 14) { cls = 'priority-mid'; badge = '<span style="background:var(--gold);color:white;padding:2px 8px;border-radius:4px;font-size:11px;">中</span>'; } else { cls = 'priority-low'; badge = '<span style="background:#9ca3af;color:white;padding:2px 8px;border-radius:4px;font-size:11px;">小</span>'; } }
+        const html = `<li class="${todo.done?'':cls}" style="${todo.done?'opacity:0.6; background:#f9fafb;':''}"><div style="display:flex;align-items:center;gap:10px;flex-grow:1;cursor:pointer;" onclick="toggleTodo('${todo.id}')"><input type="checkbox" ${todo.done?'checked':''} style="transform:scale(1.2);">${todo.done?'':badge}<span style="${todo.done?'text-decoration:line-through;color:#9ca3af;':'font-weight:bold;'}">${todo.text}</span>${todo.date?`<span style="font-size:12px;color:#6b7280;">⏳ ${todo.date.replace('T',' ')}</span>`:''}</div><button class="delete-btn" onclick="deleteTodo('${todo.id}')">削除</button></li>`;
+        if (todo.done) doneList.innerHTML += html; else activeList.innerHTML += html;
+      });
+    }
+    function addTodo() { const text=document.getElementById('todo-input').value; const date=document.getElementById('todo-date').value; if(!text) return; appData.todos.push({id:Date.now().toString(),text,date,done:false}); document.getElementById('todo-input').value=''; document.getElementById('todo-date').value=''; saveData(); renderTodos(); }
+    function toggleTodo(id) { const t=appData.todos.find(x=>x.id===id); if(t){t.done=!t.done;saveData();renderTodos();} }
+    function deleteTodo(id) { appData.todos=appData.todos.filter(x=>x.id!==id); saveData(); renderTodos(); }
+
+    let currentArea = 'リビング';
+    function addEqArea() { const n = prompt('エリア名:'); if(n && !appData.equipments[n]) { appData.equipments[n]=[]; currentArea=n; saveData(); initEqTabs(); renderEq(); } }
+    function deleteEqArea() { if(Object.keys(appData.equipments).length<=1) return alert('最低1つ必要'); if(confirm('削除?')){ delete appData.equipments[currentArea]; currentArea=Object.keys(appData.equipments)[0]; saveData(); initEqTabs(); renderEq(); } }
+    function initEqTabs() { const areas = Object.keys(appData.equipments); if(!areas.includes(currentArea)) currentArea=areas[0]; document.getElementById('eq-tabs').innerHTML=areas.map(a=>`<button class="sub-tab-btn ${a===currentArea?'active':''}" onclick="currentArea='${a}';initEqTabs();renderEq();">${a}</button>`).join(''); }
+    function renderEq() { const list = document.getElementById('eq-list'); list.innerHTML=''; (appData.equipments[currentArea]||[]).forEach(eq => { list.innerHTML+=`<li><span style="font-weight:bold;">${eq.name}</span><div style="display:flex;align-items:center;gap:15px;"><button onclick="updateEq('${eq.id}',-1)" style="padding:4px 12px;border:1px solid #ccc;background:#fff;border-radius:4px;cursor:pointer;">-</button><strong style="width:20px;text-align:center;">${eq.count}</strong><button onclick="updateEq('${eq.id}',1)" style="padding:4px 12px;border:1px solid #ccc;background:#fff;border-radius:4px;cursor:pointer;">+</button><button class="delete-btn" onclick="deleteEq('${eq.id}')">削除</button></div></li>`; }); }
+    function addEq() { const n=document.getElementById('eq-input').value; const c=parseInt(document.getElementById('eq-count').value)||1; if(!n)return; appData.equipments[currentArea].push({id:Date.now().toString(),name:n,count:c}); document.getElementById('eq-input').value=''; saveData(); renderEq(); }
+    function updateEq(id,chg) { let eq=appData.equipments[currentArea].find(x=>x.id===id); if(eq){eq.count+=chg; if(eq.count<=0){eq.count=0; if(!appData.shopping.find(x=>x.name===eq.name&&!x.checked)){appData.shopping.push({id:Date.now().toString(),name:eq.name,qty:1,price:0,checked:false}); sendLineNotify(`🛒【備品切れ】\n${currentArea}の「${eq.name}」が0になりました！買物リスト追加済。`);}} saveData(); renderEq(); renderShopping(); } }
+    function deleteEq(id) { appData.equipments[currentArea]=appData.equipments[currentArea].filter(x=>x.id!==id); saveData(); renderEq(); }
+    function sendAllEqToLine() { let msg="📦 【備品リスト】\n"; for(const [a,items] of Object.entries(appData.equipments)){ if(items.length>0) msg+=`\n[${a}]\n`+items.map(i=>`・${i.name}: ${i.count}個`).join('\n')+'\n'; } sendLineNotify(msg); alert('送信完了'); }
+
+    function renderShopping() {
+      const pList=document.getElementById('shop-list-pending'); const cList=document.getElementById('shop-list-cart'); pList.innerHTML=''; cList.innerHTML=''; let total=0, pCount=0;
+      (appData.shopping||[]).forEach(i => { const h = `<li style="border-left:4px solid ${i.checked?'var(--success)':'var(--gold)'};"><div style="display:flex;align-items:center;gap:10px;flex-grow:1;"><input type="checkbox" ${i.checked?'checked':''} onchange="toggleShop('${i.id}')" style="transform:scale(1.3);"><span style="${i.checked?'text-decoration:line-through;color:#9ca3af;':'font-weight:bold;'}">${i.name}</span><span style="font-size:12px;color:#6b7280;background:#f3f4f6;padding:2px 6px;border-radius:4px;">${i.qty||1}個</span></div><div style="display:flex;align-items:center;gap:5px;"><input type="number" value="${i.price}" onchange="updateShopPrice('${i.id}',this.value)" style="width:70px;padding:6px;" placeholder="金額">円 <button class="delete-btn" onclick="appData.shopping=appData.shopping.filter(x=>x.id!=='${i.id}');saveData();renderShopping()">×</button></div></li>`; if(i.checked){ cList.innerHTML+=h; total+=(i.price||0)*(i.qty||1); } else { pList.innerHTML+=h; pCount++; } });
+      document.getElementById('shop-total').innerText = '¥ ' + total.toLocaleString(); document.getElementById('checkout-area').style.display = (pCount===0 && appData.shopping.length>0) ? 'block' : 'none';
+    }
+    function addShop() { const n=document.getElementById('shop-input').value; const q=parseInt(document.getElementById('shop-qty').value)||1; const p=parseInt(document.getElementById('shop-price').value)||0; if(!n)return; appData.shopping.push({id:Date.now().toString(),name:n,qty:q,price:p,checked:false}); document.getElementById('shop-input').value=''; saveData(); renderShopping(); }
+    function toggleShop(id) { let i=appData.shopping.find(x=>x.id===id); if(i){i.checked=!i.checked;saveData();renderShopping();} }
+    function updateShopPrice(id,val) { let i=appData.shopping.find(x=>x.id===id); if(i){i.price=parseInt(val)||0;saveData();renderShopping();} }
+    function checkoutShopping() {
+      const cart=appData.shopping.filter(x=>x.checked); const total=cart.reduce((s,i)=>s+(i.price*(i.qty||1)),0); const m=document.getElementById('shop-payment').value; const names=cart.map(x=>`${x.name}(${x.qty||1})`).join(' / ');
+      appData.finance.push({id:Date.now().toString(),date:new Date().toISOString().split('T')[0],type:'expense',name:`買物: ${names}`,method:m,amount:total}); appData.shopping=appData.shopping.filter(x=>!x.checked); saveData(); renderShopping(); renderFinance(); switchTab('finance');
+      sendLineNotify(`🏦【家計簿】\n買い物完了\n金額: ${total.toLocaleString()}円\n支払: ${m}\n内容: ${names}`);
+    }
+
+    function sendMonthlyReport() { const cur=`${new Date().getFullYear()}-${String(new Date().getMonth()+1).padStart(2,'0')}`; let inc=0,exp=0; appData.finance.forEach(f=>{if(f.date.startsWith(cur)){if(f.type==='income')inc+=f.amount;else exp+=f.amount;}}); sendLineNotify(`📊【収支レポート】\n収入: ${inc.toLocaleString()}円\n支出: ${exp.toLocaleString()}円\n差額: ${(inc-exp).toLocaleString()}円`); alert('送信完了'); }
+    function renderFinance() {
+      const list=document.getElementById('finance-list'); list.innerHTML=''; let bal=0,mInc=0,mExp=0; const cur=new Date().toISOString().slice(0,7);
+      [...(appData.finance||[])].sort((a,b)=>new Date(a.date)-new Date(b.date)).forEach(f=>{
+        if(f.type==='income'){ bal+=f.amount; if(f.date.startsWith(cur)) mInc+=f.amount; } else { bal-=f.amount; if(f.date.startsWith(cur)) mExp+=f.amount; }
+        const incStr=f.type==='income'?`<span style="color:var(--success);font-weight:bold;">${f.amount.toLocaleString()}</span>`:''; const expStr=f.type==='expense'?`<span style="color:var(--danger);font-weight:bold;">${f.amount.toLocaleString()}</span>`:'';
+        list.innerHTML+=`<tr style="cursor:pointer;" onclick="if(confirm('削除?')){appData.finance=appData.finance.filter(x=>x.id!=='${f.id}');saveData();renderFinance();}"><td>${f.date}</td><td style="font-weight:bold;color:var(--primary);">${f.name}</td><td>${f.method==='-'?'':f.method}</td><td>${expStr}</td><td>${incStr}</td><td><strong>${bal.toLocaleString()}</strong></td></tr>`;
+      });
+      document.getElementById('dash-income').innerText=`¥ ${mInc.toLocaleString()}`; document.getElementById('dash-expense').innerText=`¥ ${mExp.toLocaleString()}`; document.getElementById('dash-total').innerText=`¥ ${bal.toLocaleString()}`;
+    }
+    function addFinance() { const t=document.getElementById('fin-type').value, d=document.getElementById('fin-date').value, n=document.getElementById('fin-name').value, m=document.getElementById('fin-method').value, a=parseInt(document.getElementById('fin-amount').value); if(!n||!a)return; appData.finance.push({id:Date.now().toString(),type:t,date:d||new Date().toISOString().split('T')[0],name:n,method:m,amount:a}); document.getElementById('fin-name').value='';document.getElementById('fin-amount').value=''; saveData(); renderFinance(); }
+
+    function checkTypos(el) {
+      const textWithoutNewlines = el.value.replace(/[\r\n]/g, '');
+      const exactCharCount = Array.from(textWithoutNewlines).length;
+      document.getElementById('char-count').innerText = exactCharCount;
+
+      const alert=document.getElementById('typo-alert'); let w=[];
+      [{b:"的を得る",g:"的を射る"},{b:"シュミレーション",g:"シミュレーション"},{b:"コミニュケーション",g:"コミュニケーション"},{b:"汚名挽回",g:"汚名返上"},{b:"見れる",g:"見られる"},{b:"食べれる",g:"食べられる"}].forEach(i=>{if(el.value.includes(i.b)) w.push(`⚠️「<strong>${i.b}</strong>」は誤用かも。(正:${i.g})`);});
+      alert.innerHTML=w.join('<br>'); alert.style.display=w.length>0?'block':'none';
+    }
+
+    function generateRefs() { const u=document.getElementById('ref-input').value.split('\n').filter(x=>x.trim()!==''); const d=new Date(); document.getElementById('ref-output').value = u.map(x=>`著者名(不明). "記事タイトル". サイト名. ${x}, (参照 ${d.getFullYear()}年${d.getMonth()+1}月${d.getDate()}日).`).join('\n'); }
+    function renderLinks() { document.getElementById('links-list').innerHTML=(appData.links||[]).map(l=>`<li class="link-item"><a href="${l.url}" target="_blank">🔗 ${l.name}</a><button class="delete-btn" onclick="appData.links=appData.links.filter(x=>x.id!=='${l.id}');saveData();renderLinks()">削除</button></li>`).join(''); }
+    function addLink() { const n=document.getElementById('link-name').value, u=document.getElementById('link-url').value; if(!n||!u)return; appData.links.push({id:Date.now().toString(),name:n,url:u}); document.getElementById('link-name').value='';document.getElementById('link-url').value=''; saveData(); renderLinks(); }
+    
+    function saveSettings() { appData.gasUrl = document.getElementById('setting-gas-url').value.trim(); appData.notifyTime = document.getElementById('setting-notify-time').value; saveData(); alert('設定を保存しました！'); }
+    function testLineNotify() { saveSettings(); sendLineNotify('📱【テスト完了】\n設定が正常に保存されました！✨'); alert('送信リクエスト完了！LINEを確認してください。'); }
+    function exportData() { const a=document.createElement('a'); a.href="data:text/json;charset=utf-8,"+encodeURIComponent(JSON.stringify(appData)); a.download="myportal_backup.json"; a.click(); }
+    function importData() { const i=document.createElement('input'); i.type='file'; i.accept='application/json'; i.onchange=e=>{ const r=new FileReader(); r.onload=ev=>{try{appData={...appData,...JSON.parse(ev.target.result)};saveData();alert('復元完了');refreshAllViews();}catch(err){alert('不正なファイル');}}; r.readAsText(e.target.files[0]); }; i.click(); }
+  </script>
+</body>
 </html>
